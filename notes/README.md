@@ -9,5 +9,6 @@ One note per real piece of work on this project: what we built, why it's built t
 | 00 | [Repo skeleton and Postgres](00-repo-skeleton-and-postgres.md) | Monorepo layout, Express/Next.js scaffolding, Docker Compose Postgres, connection pooling |
 | 01 | [Admin auth](01-admin-auth.md) | Layered backend architecture, bcrypt hashing, JWT issuing/verification, auth middleware |
 | 02 | [Projects CRUD](02-projects-crud.md) | Public/protected routes in one file, slug generation, Postgres array columns, `RETURNING *` |
+| 03 | [GitHub sync](03-github-sync.md) | Idempotent upsert logic, matching by URL vs. slug, never resetting status/source on re-sync |
 
 More notes get added as each phase of `PLAN.md` is finished.
