@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: nikblog-postgres
+    environment:
+      POSTGRES_USER: nikblog
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: nikblog
+    ports:
+      - "5434:5432"
+    volumes:
+      - nikblog_pg_data:/var/lib/postgresql/data
+
+volumes:
+  nikblog_pg_data:
