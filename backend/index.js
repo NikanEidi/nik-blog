@@ -9,6 +9,7 @@ app.use('/health', require('./routes/health'));
 app.use('/auth', require('./routes/auth'));
 app.use('/admin', require('./routes/admin'));
 app.use('/projects', require('./routes/projects'));
+app.use('/notes', require('./routes/notes'));
 
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);

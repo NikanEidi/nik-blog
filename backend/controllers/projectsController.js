@@ -1,12 +1,12 @@
 const projectService = require('../services/projectService');
 
 async function list(req, res) {
-  const result = await projectService.listProjects();
+  const result = await projectService.listPublishedProjects();
   res.json({ status: 'ok', projects: result.rows });
 }
 
 async function getBySlug(req, res) {
-  const result = await projectService.getProjectBySlug(req.params.slug);
+  const result = await projectService.getPublishedProjectBySlug(req.params.slug);
   const project = result.rows[0];
 
   if (!project) {

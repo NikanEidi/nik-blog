@@ -18,6 +18,18 @@ function getProjectBySlug(slug) {
   return pool.query('SELECT * FROM projects WHERE slug = $1', [slug]);
 }
 
+// Public endpoints must never leak a draft (e.g. a freshly GitHub-synced
+// repo Nikan hasn't reviewed yet) — these are the versions the public
+// routes call. listProjects/getProjectBySlug stay unfiltered for later
+// admin-only views that need to see drafts too.
+function listPublishedProjects() {
+  return pool.query("SELECT * FROM projects WHERE status = 'published' ORDER BY created_at DESC");
+}
+
+function getPublishedProjectBySlug(slug) {
+  return pool.query("SELECT * FROM projects WHERE slug = $1 AND status = 'published'", [slug]);
+}
+
 function createProject({ title, description, techStack, githubUrl, liveUrl }) {
   const slug = toSlug(title);
   return pool.query(
@@ -94,4 +106,14 @@ async function upsertFromGithub({ title, description, tech_stack, github_url, li
   return { row: result.rows[0], wasInserted: true };
 }
 
-module.exports = { toSlug, listProjects, getProjectBySlug, createProject, updateProject, deleteProject, upsertFromGithub };
+module.exports = {
+  toSlug,
+  listProjects,
+  getProjectBySlug,
+  listPublishedProjects,
+  getPublishedProjectBySlug,
+  createProject,
+  updateProject,
+  deleteProject,
+  upsertFromGithub,
+};
