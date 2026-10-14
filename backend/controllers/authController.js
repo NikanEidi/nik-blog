@@ -27,7 +27,25 @@ async function login(req, res) {
   }
 
   const token = generateToken(adminUser);
-  res.json({ status: 'ok', token });
+
+  // httpOnly: client-side JavaScript can never read this cookie (even via
+  // a successful XSS injection), which is the whole reason it's safer than
+  // storing the token in localStorage. sameSite: 'lax' stops the browser
+  // from sending it on cross-site requests (CSRF protection) while still
+  // allowing normal navigation. maxAge matches the JWT's own 2h expiry.
+  res.cookie('token', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: false, // dev only — must be true once this is served over HTTPS
+    maxAge: 2 * 60 * 60 * 1000,
+  });
+
+  res.json({ status: 'ok' });
 }
 
-module.exports = { login };
+function logout(req, res) {
+  res.clearCookie('token');
+  res.json({ status: 'ok' });
+}
+
+module.exports = { login, logout };
