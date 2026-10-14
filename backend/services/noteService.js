@@ -17,6 +17,10 @@ function getNoteBySlug(slug) {
   return pool.query('SELECT * FROM notes WHERE slug = $1', [slug]);
 }
 
+function getNoteById(id) {
+  return pool.query('SELECT * FROM notes WHERE id = $1', [id]);
+}
+
 function createNote({ title, category, content, projectId }) {
   const slug = toSlug(title);
   return pool.query(
@@ -55,6 +59,7 @@ module.exports = {
   getPublishedNoteBySlug,
   listNotes,
   getNoteBySlug,
+  getNoteById,
   createNote,
   updateNote,
   updateNoteStatus,

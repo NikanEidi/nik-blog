@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -69,13 +70,17 @@ export default function AdminDashboardPage() {
       </ul>
 
       <h2>Notes</h2>
+      <p>
+        <Link href="/admin/notes/new">+ New Note</Link>
+      </p>
       <ul>
         {notes.map((note) => (
           <li key={note.id}>
             {note.title} — {note.status}{' '}
             <button onClick={() => toggleStatus('notes', note.id, note.status)}>
               {note.status === 'draft' ? 'Publish' : 'Unpublish'}
-            </button>
+            </button>{' '}
+            <Link href={`/admin/notes/${note.id}/edit`}>Edit</Link>
           </li>
         ))}
       </ul>

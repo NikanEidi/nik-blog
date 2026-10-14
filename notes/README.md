@@ -13,5 +13,6 @@ One note per real piece of work on this project: what we built, why it's built t
 | 04 | [Notes module](04-notes-module.md) | Real tech-domain categories, Markdown-as-data, reusing `toSlug`, app-layer + DB-layer validation |
 | 05 | [Frontend public pages](05-frontend-pages.md) | Server Components, Next.js 16 Cache Components opt-out, async `params`, rendering Markdown safely |
 | 06 | [Admin auth cookies](06-admin-auth-cookies.md) | HTTP-only cookie vs. localStorage, CORS credentials, Client Components, checking auth via a real API call |
+| 07 | [Note create/edit forms](07-note-forms.md) | Shared form component via a `mode` prop, resending unchanged fields on update, fixing a `useParams()`/Cache Components conflict |
 
 More notes get added as each phase of `PLAN.md` is finished.
