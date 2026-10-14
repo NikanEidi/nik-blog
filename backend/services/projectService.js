@@ -54,6 +54,15 @@ function deleteProject(id) {
   return pool.query('DELETE FROM projects WHERE id = $1', [id]);
 }
 
+// A focused update for the admin dashboard's publish/draft toggle — only
+// touches `status`, so the button doesn't need to resend the whole project.
+function updateProjectStatus(id, status) {
+  return pool.query(
+    'UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+    [status, id]
+  );
+}
+
 async function upsertFromGithub({ title, description, tech_stack, github_url, live_url }) {
   // Match by github_url first — this is how an already-synced row (source
   // 'github' or a manual row that got linked below) is found on every later
@@ -114,6 +123,7 @@ module.exports = {
   getPublishedProjectBySlug,
   createProject,
   updateProject,
+  updateProjectStatus,
   deleteProject,
   upsertFromGithub,
 };

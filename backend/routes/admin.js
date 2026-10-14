@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const requireAuth = require('../middleware/requireAuth');
+const controller = require('../controllers/adminController');
 
-// A minimal protected route to prove the auth flow works end to end
-// before we build real admin features (creating notes/projects) on
-// top of it. Real admin routes will sit behind this same middleware.
-router.get('/me', requireAuth, (req, res) => {
-  res.json({ status: 'ok', admin: req.admin });
-});
+router.get('/me', requireAuth, controller.me);
+router.get('/projects', requireAuth, controller.listAllProjects);
+router.get('/notes', requireAuth, controller.listAllNotes);
+router.patch('/projects/:id/status', requireAuth, controller.updateProjectStatus);
+router.patch('/notes/:id/status', requireAuth, controller.updateNoteStatus);
 
 module.exports = router;

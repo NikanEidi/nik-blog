@@ -41,6 +41,15 @@ function deleteNote(id) {
   return pool.query('DELETE FROM notes WHERE id = $1', [id]);
 }
 
+// Same focused toggle as projectService.updateProjectStatus — only touches
+// `status`, for the admin dashboard's publish/draft button.
+function updateNoteStatus(id, status) {
+  return pool.query(
+    'UPDATE notes SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+    [status, id]
+  );
+}
+
 module.exports = {
   listPublishedNotes,
   getPublishedNoteBySlug,
@@ -48,5 +57,6 @@ module.exports = {
   getNoteBySlug,
   createNote,
   updateNote,
+  updateNoteStatus,
   deleteNote,
 };

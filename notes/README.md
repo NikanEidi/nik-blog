@@ -12,5 +12,6 @@ One note per real piece of work on this project: what we built, why it's built t
 | 03 | [GitHub sync](03-github-sync.md) | Idempotent upsert logic, matching by URL vs. slug, never resetting status/source on re-sync |
 | 04 | [Notes module](04-notes-module.md) | Real tech-domain categories, Markdown-as-data, reusing `toSlug`, app-layer + DB-layer validation |
 | 05 | [Frontend public pages](05-frontend-pages.md) | Server Components, Next.js 16 Cache Components opt-out, async `params`, rendering Markdown safely |
+| 06 | [Admin auth cookies](06-admin-auth-cookies.md) | HTTP-only cookie vs. localStorage, CORS credentials, Client Components, checking auth via a real API call |
 
 More notes get added as each phase of `PLAN.md` is finished.
