@@ -1,26 +1,103 @@
 @import "tailwindcss";
 
+/* Design tokens — see DESIGN.md. Every color/font used on the site should
+   trace back to one of these, not a one-off value in a component. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-noir-bg: #0a0a0a;
+  --color-noir-surface: #141414;
+  --color-noir-text: #f2f0ec;
+  --color-noir-muted: #8a8a86;
+  --color-noir-border: #2a2a28;
+  --color-accent-copper: #b5703f;
+  --color-accent-ice: #8ec5de;
+  --color-accent-neon: #2dd9c4;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-noir-bg: var(--color-noir-bg);
+  --color-noir-surface: var(--color-noir-surface);
+  --color-noir-text: var(--color-noir-text);
+  --color-noir-muted: var(--color-noir-muted);
+  --color-noir-border: var(--color-noir-border);
+  --color-accent-copper: var(--color-accent-copper);
+  --color-accent-ice: var(--color-accent-ice);
+  --color-accent-neon: var(--color-accent-neon);
+  --font-display: var(--font-fraunces);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--color-noir-bg);
+  color: var(--color-noir-text);
+  font-family: var(--font-sans);
+  position: relative;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Subtle film-grain texture — an inline SVG noise filter as a repeating
+   background, not an image file, so it costs no extra network request.
+   Kept at very low opacity so it reads as texture, not as noise. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  opacity: 0.035;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Glitch effect (GlitchText.tsx) — a single element, one class toggled on
+   and off. A colored double text-shadow (chromatic aberration, using the
+   site's own accent colors instead of generic red/cyan) plus a tiny
+   positional jitter. No extra DOM elements, no clip-path positioning to
+   get wrong — this replaced an earlier version that rendered real
+   duplicate text elements and visibly overlapped instead of blending. */
+.glitch-active {
+  animation: glitch-shadow 0.75s steps(4, end);
+}
+
+@keyframes glitch-shadow {
+  0% {
+    text-shadow: none;
+    opacity: 1;
+    transform: translate(0, 0);
+    filter: blur(0);
+  }
+  15% {
+    text-shadow: -4px 0 var(--color-accent-ice), 4px 0 var(--color-accent-copper);
+    opacity: 0.75;
+    transform: translate(-3px, -1px);
+    filter: blur(0.5px);
+  }
+  30% {
+    text-shadow: 5px 0 var(--color-accent-ice), -5px 0 var(--color-accent-copper);
+    opacity: 0.8;
+    transform: translate(3px, 1px);
+    filter: blur(0.5px);
+  }
+  45% {
+    text-shadow: -3px 0 var(--color-accent-copper), 3px 0 var(--color-accent-ice);
+    opacity: 0.7;
+    transform: translate(-2px, 0);
+    filter: blur(1px);
+  }
+  60% {
+    text-shadow: 4px 0 var(--color-accent-ice), -4px 0 var(--color-accent-copper);
+    opacity: 0.85;
+    transform: translate(2px, -1px);
+    filter: blur(0.5px);
+  }
+  75% {
+    text-shadow: -2px 0 var(--color-accent-copper), 2px 0 var(--color-accent-ice);
+    opacity: 0.75;
+    transform: translate(0, 1px);
+    filter: blur(0.5px);
+  }
+  100% {
+    text-shadow: none;
+    opacity: 1;
+    transform: translate(0, 0);
+    filter: blur(0);
+  }
 }
