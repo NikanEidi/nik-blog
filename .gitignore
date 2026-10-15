@@ -28,3 +28,6 @@ Thumbs.db
 
 # test coverage
 coverage/
+
+# internal design notes — not meant to be public on GitHub
+DESIGN.md

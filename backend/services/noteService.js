@@ -21,23 +21,23 @@ function getNoteById(id) {
   return pool.query('SELECT * FROM notes WHERE id = $1', [id]);
 }
 
-function createNote({ title, category, content, projectId }) {
+function createNote({ title, category, content, projectId, imageUrl }) {
   const slug = toSlug(title);
   return pool.query(
-    `INSERT INTO notes (title, slug, category, content, project_id)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO notes (title, slug, category, content, project_id, image_url)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [title, slug, category, content, projectId || null]
+    [title, slug, category, content, projectId || null, imageUrl || null]
   );
 }
 
-function updateNote(id, { title, category, content, projectId, status }) {
+function updateNote(id, { title, category, content, projectId, status, imageUrl }) {
   return pool.query(
     `UPDATE notes
-     SET title = $1, category = $2, content = $3, project_id = $4, status = $5, updated_at = NOW()
-     WHERE id = $6
+     SET title = $1, category = $2, content = $3, project_id = $4, status = $5, image_url = $6, updated_at = NOW()
+     WHERE id = $7
      RETURNING *`,
-    [title, category, content, projectId || null, status, id]
+    [title, category, content, projectId || null, status, imageUrl || null, id]
   );
 }
 

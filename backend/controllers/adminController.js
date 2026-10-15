@@ -1,5 +1,6 @@
 const projectService = require('../services/projectService');
 const noteService = require('../services/noteService');
+const s3Service = require('../services/s3Service');
 
 const VALID_STATUSES = ['draft', 'published'];
 
@@ -56,4 +57,13 @@ async function updateNoteStatus(req, res) {
   res.json({ status: 'ok', note: result.rows[0] });
 }
 
-module.exports = { me, listAllProjects, listAllNotes, getNoteById, updateProjectStatus, updateNoteStatus };
+async function uploadImage(req, res) {
+  if (!req.file) {
+    return res.status(400).json({ status: 'error', message: 'No image file provided' });
+  }
+
+  const url = await s3Service.uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
+  res.status(201).json({ status: 'ok', url });
+}
+
+module.exports = { me, listAllProjects, listAllNotes, getNoteById, updateProjectStatus, updateNoteStatus, uploadImage };

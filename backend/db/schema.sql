@@ -37,3 +37,8 @@ CREATE TABLE IF NOT EXISTS notes (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Same existing-table situation as `status` above: these ALTERs are what
+-- actually add the column to a database that already has these tables.
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE notes ADD COLUMN IF NOT EXISTS image_url TEXT;

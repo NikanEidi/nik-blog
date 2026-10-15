@@ -14,5 +14,8 @@ One note per real piece of work on this project: what we built, why it's built t
 | 05 | [Frontend public pages](05-frontend-pages.md) | Server Components, Next.js 16 Cache Components opt-out, async `params`, rendering Markdown safely |
 | 06 | [Admin auth cookies](06-admin-auth-cookies.md) | HTTP-only cookie vs. localStorage, CORS credentials, Client Components, checking auth via a real API call |
 | 07 | [Note create/edit forms](07-note-forms.md) | Shared form component via a `mode` prop, resending unchanged fields on update, fixing a `useParams()`/Cache Components conflict |
+| 08 | [Image uploads to S3](08-image-uploads-s3.md) | Least-privilege IAM, scoped bucket policy, multer memory storage, random filenames, multipart form uploads |
+| 09 | [Noir design system](09-noir-design-system.md) | Tailwind v4 CSS tokens, editorial layout, ref-based cursor glow (no re-renders), inline SVG grain texture |
+| 10 | [Glitch + cursor-proximity tint](10-glitch-and-cursor-proximity.md) | Diagnosing a stale Turbopack CSS cache vs. a silently-dropped Lightning CSS rule, distance-based color blending in JS |
 
 More notes get added as each phase of `PLAN.md` is finished.

@@ -19,7 +19,7 @@ async function getBySlug(req, res) {
 }
 
 async function create(req, res) {
-  const { title, category, content, projectId } = req.body;
+  const { title, category, content, projectId, imageUrl } = req.body;
 
   if (!title || !category || !content) {
     return res.status(400).json({ status: 'error', message: 'title, category, and content are required' });
@@ -29,18 +29,18 @@ async function create(req, res) {
     return res.status(400).json({ status: 'error', message: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
   }
 
-  const result = await noteService.createNote({ title, category, content, projectId });
+  const result = await noteService.createNote({ title, category, content, projectId, imageUrl });
   res.status(201).json({ status: 'ok', note: result.rows[0] });
 }
 
 async function update(req, res) {
-  const { title, category, content, projectId, status } = req.body;
+  const { title, category, content, projectId, status, imageUrl } = req.body;
 
   if (category && !VALID_CATEGORIES.includes(category)) {
     return res.status(400).json({ status: 'error', message: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
   }
 
-  const result = await noteService.updateNote(req.params.id, { title, category, content, projectId, status });
+  const result = await noteService.updateNote(req.params.id, { title, category, content, projectId, status, imageUrl });
 
   if (!result.rows[0]) {
     return res.status(404).json({ status: 'error', message: 'Note not found' });
