@@ -2,6 +2,11 @@
 // color map"). Centralized here so the mapping is defined once, not
 // re-typed in every component that renders a category-colored element.
 //
+// `category` itself is a free-text tag Nikan types in the admin form, not
+// an enforced enum (notes/13) — this map covers the categories used so
+// far; any category not listed here falls back to a neutral grey below,
+// so a brand-new tag still renders correctly without needing a code change.
+//
 // Stored as hex, not `var(--color-...)`, on purpose: DossierItem's border
 // proximity-tint needs the real numeric value to interpolate in JS (see
 // notes/10 — CSS-side color blending turned out unreliable with this

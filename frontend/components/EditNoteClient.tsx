@@ -9,10 +9,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 type Note = {
   id: number;
   title: string;
-  category: 'ai-ml' | 'backend' | 'infrastructure' | 'ios' | 'dsa';
+  category: string;
   content: string;
   status: 'draft' | 'published';
   image_url: string | null;
+  project_id: number | null;
 };
 
 export default function EditNoteClient({ id }: { id: string }) {
@@ -47,7 +48,7 @@ export default function EditNoteClient({ id }: { id: string }) {
       <NoteForm
         mode="edit"
         noteId={note.id}
-        initialValues={{ ...note, imageUrl: note.image_url }}
+        initialValues={{ ...note, imageUrl: note.image_url, projectId: note.project_id }}
       />
     </main>
   );

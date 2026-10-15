@@ -32,7 +32,7 @@ export type Note = {
   id: number;
   title: string;
   slug: string;
-  category: 'ai-ml' | 'backend' | 'infrastructure' | 'ios' | 'dsa';
+  category: string;
   content: string;
   project_id: number | null;
   status: 'draft' | 'published';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -9,15 +9,16 @@ const labelClass = 'font-mono text-xs uppercase tracking-wide text-noir-muted';
 const inputClass =
   'w-full border-0 border-b border-noir-border bg-transparent py-2 text-noir-text outline-none transition-colors focus:border-accent-ice';
 
-const CATEGORIES = ['ai-ml', 'backend', 'infrastructure', 'ios', 'dsa'] as const;
-
 type NoteFormValues = {
   title: string;
-  category: (typeof CATEGORIES)[number];
+  category: string;
   content: string;
   status?: 'draft' | 'published';
   imageUrl?: string | null;
+  projectId?: number | null;
 };
+
+type ProjectOption = { id: number; title: string };
 
 export default function NoteForm({
   mode,
@@ -30,12 +31,38 @@ export default function NoteForm({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initialValues?.title ?? '');
-  const [category, setCategory] = useState<(typeof CATEGORIES)[number]>(initialValues?.category ?? 'backend');
+  const [category, setCategory] = useState(initialValues?.category ?? '');
   const [content, setContent] = useState(initialValues?.content ?? '');
   const [imageUrl, setImageUrl] = useState<string | null>(initialValues?.imageUrl ?? null);
+  const [projectId, setProjectId] = useState<number | null>(initialValues?.projectId ?? null);
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Powers the "Related Notes" section on a project's detail page
+  // (projects/13-project-detail-page-design.md) — without this field, a
+  // note's `project_id` (already supported by the backend) was never
+  // actually reachable from the UI.
+  useEffect(() => {
+    fetch(`${API_URL}/admin/projects`, { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => setProjects(data.projects ?? []));
+  }, []);
+
+  // Category is a free-text tag Nikan types himself, not a fixed list — he
+  // owns keeping the naming consistent. This just offers what's already
+  // been used as browser-native autocomplete suggestions, it never
+  // restricts the field to them.
+  useEffect(() => {
+    fetch(`${API_URL}/admin/notes`, { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => {
+        const categories: string[] = (data.notes ?? []).map((n: { category: string }) => n.category);
+        setExistingCategories([...new Set(categories)].sort());
+      });
+  }, []);
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -97,7 +124,7 @@ export default function NoteForm({
     // edit has to resend the note's current status — otherwise it would
     // be sent as undefined and the database update would fail. Create
     // doesn't need this: a new note always starts as 'draft' by default.
-    const body: Record<string, unknown> = { title, category, content, imageUrl };
+    const body: Record<string, unknown> = { title, category, content, imageUrl, projectId };
     if (mode === 'edit') {
       body.status = initialValues?.status ?? 'draft';
     }
@@ -132,15 +159,37 @@ export default function NoteForm({
         <label htmlFor="category" className={labelClass}>
           Category
         </label>
-        <select
+        <input
           id="category"
-          className={`${inputClass} appearance-none`}
+          list="categoryOptions"
+          className={inputClass}
           value={category}
-          onChange={(e) => setCategory(e.target.value as typeof category)}
+          onChange={(e) => setCategory(e.target.value)}
+          placeholder="e.g. backend"
+          required
+        />
+        <datalist id="categoryOptions">
+          {existingCategories.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="project" className={labelClass}>
+          Project (optional)
+        </label>
+        <select
+          id="project"
+          className={`${inputClass} appearance-none`}
+          value={projectId ?? ''}
+          onChange={(e) => setProjectId(e.target.value ? Number(e.target.value) : null)}
         >
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c} className="bg-noir-bg">
-              {c}
+          <option value="" className="bg-noir-bg">
+            None
+          </option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id} className="bg-noir-bg">
+              {p.title}
             </option>
           ))}
         </select>

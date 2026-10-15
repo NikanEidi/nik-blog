@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS notes (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('ai-ml', 'backend', 'infrastructure', 'ios', 'dsa')),
+    category TEXT NOT NULL,
     content TEXT NOT NULL,
     project_id INTEGER REFERENCES projects(id),
     status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
@@ -51,3 +51,10 @@ ALTER TABLE notes ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT false
 -- GitHub's real "last push" time for a project — the Live Pulse data
 -- (notes/11), populated by sync-github.js, not hand-entered.
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_pushed_at TIMESTAMPTZ;
+
+-- Note category went from a fixed 5-value CHECK to a free-text tag Nikan
+-- types himself — he owns keeping the naming consistent, not the schema.
+-- This drops the old constraint on a database that already has it (a
+-- brand-new database never gets it in the first place, since the
+-- CREATE TABLE above no longer declares it).
+ALTER TABLE notes DROP CONSTRAINT IF EXISTS notes_category_check;
