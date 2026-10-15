@@ -11,6 +11,8 @@
   --color-accent-copper: #b5703f;
   --color-accent-ice: #8ec5de;
   --color-accent-neon: #2dd9c4;
+  --color-accent-violet: #9b8cd6;
+  --color-accent-coral: #d97a5c;
 }
 
 @theme inline {
@@ -22,6 +24,8 @@
   --color-accent-copper: var(--color-accent-copper);
   --color-accent-ice: var(--color-accent-ice);
   --color-accent-neon: var(--color-accent-neon);
+  --color-accent-violet: var(--color-accent-violet);
+  --color-accent-coral: var(--color-accent-coral);
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

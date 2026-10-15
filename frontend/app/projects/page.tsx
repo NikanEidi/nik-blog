@@ -26,7 +26,7 @@ export default async function ProjectsPage() {
           <li key={project.id} className="flex flex-col gap-2 py-8 first:pt-0 md:flex-row md:items-baseline md:justify-between md:gap-8">
             <Link
               href={`/projects/${project.slug}`}
-              className="font-display text-xl underline decoration-transparent underline-offset-4 transition-colors hover:text-accent-ice hover:decoration-accent-ice md:w-1/3 md:shrink-0"
+              className="rounded px-1 -mx-1 font-display text-xl underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice md:w-1/3 md:shrink-0"
             >
               {project.title}
             </Link>

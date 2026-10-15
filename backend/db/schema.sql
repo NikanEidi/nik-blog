@@ -42,3 +42,12 @@ CREATE TABLE IF NOT EXISTS notes (
 -- actually add the column to a database that already has these tables.
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS image_url TEXT;
 ALTER TABLE notes ADD COLUMN IF NOT EXISTS image_url TEXT;
+
+-- Lets Nikan hand-pick what shows first on the homepage preview, instead
+-- of always being pure recency order.
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE notes ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT false;
+
+-- GitHub's real "last push" time for a project — the Live Pulse data
+-- (notes/11), populated by sync-github.js, not hand-entered.
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_pushed_at TIMESTAMPTZ;

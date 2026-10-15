@@ -22,8 +22,11 @@ function getProjectBySlug(slug) {
 // repo Nikan hasn't reviewed yet) — these are the versions the public
 // routes call. listProjects/getProjectBySlug stay unfiltered for later
 // admin-only views that need to see drafts too.
+// pinned DESC first — hand-picked projects always lead, true ties broken
+// by recency. Postgres sorts booleans false < true, so DESC puts
+// pinned=true rows first.
 function listPublishedProjects() {
-  return pool.query("SELECT * FROM projects WHERE status = 'published' ORDER BY created_at DESC");
+  return pool.query("SELECT * FROM projects WHERE status = 'published' ORDER BY pinned DESC, created_at DESC");
 }
 
 function getPublishedProjectBySlug(slug) {
@@ -63,7 +66,14 @@ function updateProjectStatus(id, status) {
   );
 }
 
-async function upsertFromGithub({ title, description, tech_stack, github_url, live_url }) {
+function setProjectPinned(id, pinned) {
+  return pool.query(
+    'UPDATE projects SET pinned = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+    [pinned, id]
+  );
+}
+
+async function upsertFromGithub({ title, description, tech_stack, github_url, live_url, github_pushed_at }) {
   // Match by github_url first — this is how an already-synced row (source
   // 'github' or a manual row that got linked below) is found on every later
   // run. Metadata gets refreshed but status/source are left alone, so a
@@ -76,10 +86,10 @@ async function upsertFromGithub({ title, description, tech_stack, github_url, li
   if (byUrl.rows.length > 0) {
     const result = await pool.query(
       `UPDATE projects
-       SET title = $1, description = $2, tech_stack = $3, live_url = $4, updated_at = NOW()
-       WHERE id = $5
+       SET title = $1, description = $2, tech_stack = $3, live_url = $4, github_pushed_at = $5, updated_at = NOW()
+       WHERE id = $6
        RETURNING *`,
-      [title, description, tech_stack, live_url, byUrl.rows[0].id]
+      [title, description, tech_stack, live_url, github_pushed_at, byUrl.rows[0].id]
     );
     return { row: result.rows[0], wasInserted: false };
   }
@@ -98,19 +108,19 @@ async function upsertFromGithub({ title, description, tech_stack, github_url, li
   if (slugOwner.rows.length > 0) {
     const result = await pool.query(
       `UPDATE projects
-       SET description = $1, tech_stack = $2, github_url = $3, live_url = $4, updated_at = NOW()
-       WHERE id = $5
+       SET description = $1, tech_stack = $2, github_url = $3, live_url = $4, github_pushed_at = $5, updated_at = NOW()
+       WHERE id = $6
        RETURNING *`,
-      [description, tech_stack, github_url, live_url, slugOwner.rows[0].id]
+      [description, tech_stack, github_url, live_url, github_pushed_at, slugOwner.rows[0].id]
     );
     return { row: result.rows[0], wasInserted: false };
   }
 
   const result = await pool.query(
-    `INSERT INTO projects (title, slug, description, tech_stack, github_url, live_url, source, status)
-     VALUES ($1, $2, $3, $4, $5, $6, 'github', 'draft')
+    `INSERT INTO projects (title, slug, description, tech_stack, github_url, live_url, github_pushed_at, source, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, 'github', 'draft')
      RETURNING *`,
-    [title, slug, description, tech_stack, github_url, live_url]
+    [title, slug, description, tech_stack, github_url, live_url, github_pushed_at]
   );
   return { row: result.rows[0], wasInserted: true };
 }
@@ -124,6 +134,7 @@ module.exports = {
   createProject,
   updateProject,
   updateProjectStatus,
+  setProjectPinned,
   deleteProject,
   upsertFromGithub,
 };

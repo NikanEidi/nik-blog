@@ -10,6 +10,9 @@ export type Project = {
   live_url: string | null;
   source: 'manual' | 'github';
   status: 'draft' | 'published';
+  pinned: boolean;
+  image_url: string | null;
+  github_pushed_at: string | null;
 };
 
 export async function getProjects(): Promise<Project[]> {
@@ -33,6 +36,8 @@ export type Note = {
   content: string;
   project_id: number | null;
   status: 'draft' | 'published';
+  pinned: boolean;
+  image_url: string | null;
 };
 
 export async function getNotes(): Promise<Note[]> {

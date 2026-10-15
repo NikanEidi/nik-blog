@@ -1,69 +1,98 @@
-import Image from "next/image";
+import Link from 'next/link';
+import type { Metadata } from 'next';
+import { getProjects, getNotes, type Project, type Note } from '@/lib/api';
+import GlitchText from '@/components/GlitchText';
+import ReactiveText from '@/components/ReactiveText';
+import DossierItem, { LivePulse } from '@/components/DossierItem';
+import { categoryColor } from '@/lib/categoryColors';
 
-export default function Home() {
+export const instant = false;
+
+export const metadata: Metadata = {
+  title: 'Nikan Eidi — Full-stack developer',
+  description:
+    'Full-stack developer in Canada and Seneca Polytechnic CPA graduate. Real projects, real notes from building them — backend APIs, databases, auth, and the bugs along the way.',
+};
+
+const ACCENT_COPPER = '#b5703f';
+const NOIR_BORDER = '#2a2a28';
+
+export default async function Home() {
+  const [projects, notes] = await Promise.all([getProjects(), getNotes()]);
+  const featuredProjects = projects.slice(0, 3);
+  const featuredNotes = notes.slice(0, 3);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="mx-auto max-w-6xl px-6 py-20 md:px-10">
+      <h1 className="font-display text-5xl md:text-7xl">
+        <GlitchText as="span">Nikan Eidi</GlitchText>
+      </h1>
+
+      <ReactiveText as="p" muted radius={360} className="mt-6 max-w-[62ch] text-lg leading-relaxed">
+        Full-stack developer based in Canada, and a Computer Programming &amp; Analysis graduate from Seneca
+        Polytechnic. I build real systems — backend APIs, databases, auth, the parts that actually run in
+        production — and write about what I&apos;m actually learning as I build them, not just when a project
+        ships.
+      </ReactiveText>
+
+      {/* Projects preview — dossier grid, Live Pulse = real GitHub push time */}
+      <section className="mt-20">
+        <div className="flex items-baseline justify-between">
+          <ReactiveText as="h2" radius={300} className="font-display text-2xl">
+            Projects
+          </ReactiveText>
+          <Link
+            href="/projects"
+            className="rounded px-1 -mx-1 font-mono text-sm text-noir-muted underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+            View more →
+          </Link>
+        </div>
+        <ul className="mt-8 grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-6">
+          {featuredProjects.map((project: Project, i: number) => (
+            <DossierItem
+              key={project.id}
+              index={i}
+              href={`/projects/${project.slug}`}
+              title={project.title}
+              accent={project.pinned ? ACCENT_COPPER : NOIR_BORDER}
+              corner={project.github_pushed_at && <LivePulse pushedAt={project.github_pushed_at} />}
+              meta={project.description && <p className="max-w-[48ch] text-noir-muted">{project.description}</p>}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          ))}
+        </ul>
+      </section>
+
+      {/* Notes preview — dossier grid, accent bar = category color */}
+      <section className="mt-16">
+        <div className="flex items-baseline justify-between">
+          <ReactiveText as="h2" radius={300} className="font-display text-2xl">
+            Notes
+          </ReactiveText>
+          <Link
+            href="/notes"
+            className="rounded px-1 -mx-1 font-mono text-sm text-noir-muted underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice"
           >
-            Documentation
-          </a>
+            View more →
+          </Link>
         </div>
-      </main>
-    </div>
+        <ul className="mt-8 grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-6">
+          {featuredNotes.map((note: Note, i: number) => (
+            <DossierItem
+              key={note.id}
+              index={i}
+              href={`/notes/${note.slug}`}
+              title={note.title}
+              accent={categoryColor(note.category)}
+              meta={
+                <span className="font-mono text-sm uppercase tracking-wide" style={{ color: categoryColor(note.category) }}>
+                  {note.category}
+                </span>
+              }
+            />
+          ))}
+        </ul>
+      </section>
+    </main>
   );
 }

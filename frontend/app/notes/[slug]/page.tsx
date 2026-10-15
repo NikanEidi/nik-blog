@@ -4,6 +4,36 @@ import { getNoteBySlug } from '@/lib/api';
 
 export const instant = false;
 
+// Styling for rendered Markdown — mapped by hand to the noir tokens
+// instead of pulling in @tailwindcss/typography, so headings/code/links
+// inside a note match the rest of the site instead of a generic default.
+const markdownComponents = {
+  h2: (props: React.ComponentProps<'h2'>) => (
+    <h2 className="font-display mt-10 mb-3 text-2xl" {...props} />
+  ),
+  h3: (props: React.ComponentProps<'h3'>) => (
+    <h3 className="font-display mt-8 mb-2 text-xl" {...props} />
+  ),
+  p: (props: React.ComponentProps<'p'>) => <p className="my-4 leading-relaxed" {...props} />,
+  a: (props: React.ComponentProps<'a'>) => (
+    <a
+      className="rounded px-0.5 -mx-0.5 underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice"
+      {...props}
+    />
+  ),
+  code: (props: React.ComponentProps<'code'>) => (
+    <code className="rounded bg-noir-surface px-1.5 py-0.5 font-mono text-[0.9em] text-accent-copper" {...props} />
+  ),
+  pre: (props: React.ComponentProps<'pre'>) => (
+    <pre className="my-6 overflow-x-auto rounded bg-noir-surface p-4 font-mono text-sm [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-noir-text" {...props} />
+  ),
+  ul: (props: React.ComponentProps<'ul'>) => <ul className="my-4 list-disc space-y-1 pl-6" {...props} />,
+  ol: (props: React.ComponentProps<'ol'>) => <ol className="my-4 list-decimal space-y-1 pl-6" {...props} />,
+  blockquote: (props: React.ComponentProps<'blockquote'>) => (
+    <blockquote className="my-4 border-l-2 border-noir-border pl-4 text-noir-muted" {...props} />
+  ),
+};
+
 export default async function NoteDetailPage({
   params,
 }: {
@@ -17,11 +47,12 @@ export default async function NoteDetailPage({
   }
 
   return (
-    <main>
-      <h1>{note.title}</h1>
-      <p>Category: {note.category}</p>
-      <article>
-        <ReactMarkdown>{note.content}</ReactMarkdown>
+    <main className="mx-auto max-w-3xl px-6 py-20 md:px-10">
+      <span className="font-mono text-sm uppercase tracking-wide text-noir-muted">{note.category}</span>
+      <h1 className="font-display mt-2 text-4xl md:text-5xl">{note.title}</h1>
+
+      <article className="mt-12 max-w-[68ch]">
+        <ReactMarkdown components={markdownComponents}>{note.content}</ReactMarkdown>
       </article>
     </main>
   );

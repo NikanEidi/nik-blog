@@ -17,6 +17,11 @@ async function fetchRepos() {
       tech_stack: repo.language ? [repo.language] : [],
       github_url: repo.html_url,
       live_url: repo.homepage || null,
+      // GitHub's own "last push" timestamp — the real data behind the
+      // homepage's Live Pulse indicator (DESIGN.md), not a decorative
+      // number. Distinct from our own `updated_at`, which is when *we*
+      // last wrote to the row, not when Nikan last pushed a commit.
+      github_pushed_at: repo.pushed_at,
     }));
 }
 

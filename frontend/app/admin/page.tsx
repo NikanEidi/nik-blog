@@ -7,7 +7,7 @@ import Link from 'next/link';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type Admin = { id: number; email: string };
-type Item = { id: number; title: string; status: 'draft' | 'published' };
+type Item = { id: number; title: string; status: 'draft' | 'published'; pinned: boolean };
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -48,6 +48,16 @@ export default function AdminDashboardPage() {
     loadDashboard();
   }
 
+  async function togglePinned(kind: 'projects' | 'notes', id: number, current: boolean) {
+    await fetch(`${API_URL}/admin/${kind}/${id}/pin`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ pinned: !current }),
+    });
+    loadDashboard();
+  }
+
   if (loading) {
     return <main>Loading...</main>;
   }
@@ -64,6 +74,9 @@ export default function AdminDashboardPage() {
             {project.title} — {project.status}{' '}
             <button onClick={() => toggleStatus('projects', project.id, project.status)}>
               {project.status === 'draft' ? 'Publish' : 'Unpublish'}
+            </button>{' '}
+            <button onClick={() => togglePinned('projects', project.id, project.pinned)}>
+              {project.pinned ? 'Unpin' : 'Pin'}
             </button>
           </li>
         ))}
@@ -79,6 +92,9 @@ export default function AdminDashboardPage() {
             {note.title} — {note.status}{' '}
             <button onClick={() => toggleStatus('notes', note.id, note.status)}>
               {note.status === 'draft' ? 'Publish' : 'Unpublish'}
+            </button>{' '}
+            <button onClick={() => togglePinned('notes', note.id, note.pinned)}>
+              {note.pinned ? 'Unpin' : 'Pin'}
             </button>{' '}
             <Link href={`/admin/notes/${note.id}/edit`}>Edit</Link>
           </li>

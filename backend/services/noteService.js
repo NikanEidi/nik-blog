@@ -2,7 +2,7 @@ const pool = require('../db/pool');
 const { toSlug } = require('./projectService');
 
 function listPublishedNotes() {
-  return pool.query("SELECT * FROM notes WHERE status = 'published' ORDER BY created_at DESC");
+  return pool.query("SELECT * FROM notes WHERE status = 'published' ORDER BY pinned DESC, created_at DESC");
 }
 
 function getPublishedNoteBySlug(slug) {
@@ -54,6 +54,13 @@ function updateNoteStatus(id, status) {
   );
 }
 
+function setNotePinned(id, pinned) {
+  return pool.query(
+    'UPDATE notes SET pinned = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+    [pinned, id]
+  );
+}
+
 module.exports = {
   listPublishedNotes,
   getPublishedNoteBySlug,
@@ -63,5 +70,6 @@ module.exports = {
   createNote,
   updateNote,
   updateNoteStatus,
+  setNotePinned,
   deleteNote,
 };

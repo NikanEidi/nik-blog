@@ -57,6 +57,32 @@ async function updateNoteStatus(req, res) {
   res.json({ status: 'ok', note: result.rows[0] });
 }
 
+async function setProjectPinned(req, res) {
+  const { pinned } = req.body;
+  if (typeof pinned !== 'boolean') {
+    return res.status(400).json({ status: 'error', message: 'pinned must be a boolean' });
+  }
+
+  const result = await projectService.setProjectPinned(req.params.id, pinned);
+  if (!result.rows[0]) {
+    return res.status(404).json({ status: 'error', message: 'Project not found' });
+  }
+  res.json({ status: 'ok', project: result.rows[0] });
+}
+
+async function setNotePinned(req, res) {
+  const { pinned } = req.body;
+  if (typeof pinned !== 'boolean') {
+    return res.status(400).json({ status: 'error', message: 'pinned must be a boolean' });
+  }
+
+  const result = await noteService.setNotePinned(req.params.id, pinned);
+  if (!result.rows[0]) {
+    return res.status(404).json({ status: 'error', message: 'Note not found' });
+  }
+  res.json({ status: 'ok', note: result.rows[0] });
+}
+
 async function uploadImage(req, res) {
   if (!req.file) {
     return res.status(400).json({ status: 'error', message: 'No image file provided' });
@@ -66,4 +92,14 @@ async function uploadImage(req, res) {
   res.status(201).json({ status: 'ok', url });
 }
 
-module.exports = { me, listAllProjects, listAllNotes, getNoteById, updateProjectStatus, updateNoteStatus, uploadImage };
+module.exports = {
+  me,
+  listAllProjects,
+  listAllNotes,
+  getNoteById,
+  updateProjectStatus,
+  updateNoteStatus,
+  setProjectPinned,
+  setNotePinned,
+  uploadImage,
+};
