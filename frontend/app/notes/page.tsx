@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getNotes } from '@/lib/api';
+import GlitchText from '@/components/GlitchText';
 
 export const instant = false;
 
@@ -8,7 +9,9 @@ export default async function NotesPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-20 md:px-10">
-      <h1 className="font-display text-4xl md:text-5xl">Notes</h1>
+      <h1 className="font-display text-4xl md:text-5xl">
+        <GlitchText as="span" intervalMs={5000}>Notes</GlitchText>
+      </h1>
       <p className="mt-4 max-w-[60ch] text-noir-muted">
         Working notes from real build sessions — what I built, why it&apos;s built that way, and the bugs along the
         way.

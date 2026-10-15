@@ -29,6 +29,14 @@ async function getNoteById(req, res) {
   res.json({ status: 'ok', note: result.rows[0] });
 }
 
+async function getProjectById(req, res) {
+  const result = await projectService.getProjectById(req.params.id);
+  if (!result.rows[0]) {
+    return res.status(404).json({ status: 'error', message: 'Project not found' });
+  }
+  res.json({ status: 'ok', project: result.rows[0] });
+}
+
 // Lightweight publish/draft toggle — only changes `status`, so the
 // dashboard button doesn't need to resend the whole project/note.
 async function updateProjectStatus(req, res) {
@@ -97,6 +105,7 @@ module.exports = {
   listAllProjects,
   listAllNotes,
   getNoteById,
+  getProjectById,
   updateProjectStatus,
   updateNoteStatus,
   setProjectPinned,

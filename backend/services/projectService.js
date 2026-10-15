@@ -18,6 +18,10 @@ function getProjectBySlug(slug) {
   return pool.query('SELECT * FROM projects WHERE slug = $1', [slug]);
 }
 
+function getProjectById(id) {
+  return pool.query('SELECT * FROM projects WHERE id = $1', [id]);
+}
+
 // Public endpoints must never leak a draft (e.g. a freshly GitHub-synced
 // repo Nikan hasn't reviewed yet) — these are the versions the public
 // routes call. listProjects/getProjectBySlug stay unfiltered for later
@@ -33,23 +37,23 @@ function getPublishedProjectBySlug(slug) {
   return pool.query("SELECT * FROM projects WHERE slug = $1 AND status = 'published'", [slug]);
 }
 
-function createProject({ title, description, techStack, githubUrl, liveUrl }) {
+function createProject({ title, description, techStack, githubUrl, liveUrl, imageUrl }) {
   const slug = toSlug(title);
   return pool.query(
-    `INSERT INTO projects (title, slug, description, tech_stack, github_url, live_url)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO projects (title, slug, description, tech_stack, github_url, live_url, image_url)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
-    [title, slug, description, techStack, githubUrl, liveUrl]
+    [title, slug, description, techStack, githubUrl, liveUrl, imageUrl || null]
   );
 }
 
-function updateProject(id, { title, description, techStack, githubUrl, liveUrl }) {
+function updateProject(id, { title, description, techStack, githubUrl, liveUrl, imageUrl }) {
   return pool.query(
     `UPDATE projects
-     SET title = $1, description = $2, tech_stack = $3, github_url = $4, live_url = $5, updated_at = NOW()
-     WHERE id = $6
+     SET title = $1, description = $2, tech_stack = $3, github_url = $4, live_url = $5, image_url = $6, updated_at = NOW()
+     WHERE id = $7
      RETURNING *`,
-    [title, description, techStack, githubUrl, liveUrl, id]
+    [title, description, techStack, githubUrl, liveUrl, imageUrl || null, id]
   );
 }
 
@@ -129,6 +133,7 @@ module.exports = {
   toSlug,
   listProjects,
   getProjectBySlug,
+  getProjectById,
   listPublishedProjects,
   getPublishedProjectBySlug,
   createProject,

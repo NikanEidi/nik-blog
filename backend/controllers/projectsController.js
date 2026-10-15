@@ -17,7 +17,7 @@ async function getBySlug(req, res) {
 }
 
 async function create(req, res) {
-  const { title, description, techStack, githubUrl, liveUrl } = req.body;
+  const { title, description, techStack, githubUrl, liveUrl, imageUrl } = req.body;
 
   if (!title) {
     return res.status(400).json({ status: 'error', message: 'title is required' });
@@ -29,18 +29,20 @@ async function create(req, res) {
     techStack: techStack || [],
     githubUrl,
     liveUrl,
+    imageUrl,
   });
   res.status(201).json({ status: 'ok', project: result.rows[0] });
 }
 
 async function update(req, res) {
-  const { title, description, techStack, githubUrl, liveUrl } = req.body;
+  const { title, description, techStack, githubUrl, liveUrl, imageUrl } = req.body;
   const result = await projectService.updateProject(req.params.id, {
     title,
     description,
     techStack: techStack || [],
     githubUrl,
     liveUrl,
+    imageUrl,
   });
 
   if (!result.rows[0]) {

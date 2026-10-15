@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+const labelClass = 'font-mono text-xs uppercase tracking-wide text-noir-muted';
+const inputClass =
+  'w-full border-0 border-b border-noir-border bg-transparent py-2 text-noir-text outline-none transition-colors focus:border-accent-ice';
+
 const CATEGORIES = ['ai-ml', 'backend', 'infrastructure', 'ios', 'dsa'] as const;
 
 type NoteFormValues = {
@@ -100,47 +104,71 @@ export default function NoteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="title">Title</label>
-        <input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+    <form onSubmit={handleSubmit} className="mt-10 flex flex-col gap-6">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="title" className={labelClass}>
+          Title
+        </label>
+        <input id="title" className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} required />
       </div>
-      <div>
-        <label htmlFor="category">Category</label>
-        <select id="category" value={category} onChange={(e) => setCategory(e.target.value as typeof category)}>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="category" className={labelClass}>
+          Category
+        </label>
+        <select
+          id="category"
+          className={`${inputClass} appearance-none`}
+          value={category}
+          onChange={(e) => setCategory(e.target.value as typeof category)}
+        >
           {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
+            <option key={c} value={c} className="bg-noir-bg">
               {c}
             </option>
           ))}
         </select>
       </div>
-      <div>
-        <label htmlFor="image">Image</label>
-        <input id="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml" onChange={handleImageChange} />
-        {uploading && <p>Uploading...</p>}
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="image" className={labelClass}>
+          Image
+        </label>
+        <input
+          id="image"
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+          onChange={handleImageChange}
+          className="font-mono text-sm text-noir-muted file:mr-3 file:border file:border-noir-border file:bg-transparent file:px-3 file:py-1.5 file:font-mono file:text-xs file:uppercase file:tracking-wide file:text-noir-text"
+        />
+        {uploading && <p className="font-mono text-sm text-noir-muted">Uploading…</p>}
         {imageUrl && !uploading && (
-          <div>
-            <img src={imageUrl} alt="" style={{ maxWidth: '200px' }} />
-            <button type="button" onClick={() => setImageUrl(null)}>
+          <div className="mt-2 flex items-center gap-4">
+            <img src={imageUrl} alt="" className="max-w-[200px] rounded border border-noir-border" />
+            <button type="button" onClick={() => setImageUrl(null)} className="font-mono text-xs uppercase tracking-wide text-noir-muted transition-colors hover:text-accent-coral">
               Remove image
             </button>
           </div>
         )}
       </div>
-      <div>
-        <label htmlFor="content">Content (Markdown)</label>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="content" className={labelClass}>
+          Content (Markdown)
+        </label>
         <textarea
           id="content"
+          className={`${inputClass} border font-mono text-sm leading-relaxed`}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={16}
           required
         />
       </div>
-      {error && <p>{error}</p>}
-      <button type="submit" disabled={saving}>
-        {saving ? 'Saving...' : mode === 'create' ? 'Create note' : 'Save changes'}
+      {error && <p className="text-sm text-accent-coral">{error}</p>}
+      <button
+        type="submit"
+        disabled={saving}
+        className="self-start border border-accent-ice px-5 py-2 font-mono text-sm uppercase tracking-wide text-accent-ice transition-colors hover:bg-accent-ice hover:text-noir-bg disabled:opacity-50"
+      >
+        {saving ? 'Saving…' : mode === 'create' ? 'Create note' : 'Save changes'}
       </button>
     </form>
   );
