@@ -85,6 +85,7 @@ export default function AdminDashboardPage() {
   const [projectStatusFilter, setProjectStatusFilter] = useState<StatusFilter>('all');
   const [noteSearch, setNoteSearch] = useState('');
   const [noteStatusFilter, setNoteStatusFilter] = useState<StatusFilter>('all');
+  const [activeTab, setActiveTab] = useState<'projects' | 'notes'>('projects');
 
   const loadDashboard = useCallback(async () => {
     const meRes = await fetch(`${API_URL}/admin/me`, { credentials: 'include' });
@@ -172,7 +173,29 @@ export default function AdminDashboardPage() {
         </button>
       </div>
 
-      <section className="mt-16">
+      <div className="mt-12 flex gap-6 border-b border-noir-border">
+        {(
+          [
+            ['projects', 'Projects', projects.length],
+            ['notes', 'Notes', notes.length],
+          ] as const
+        ).map(([tab, label, count]) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`-mb-px border-b-2 px-1 pb-3 font-mono text-sm uppercase tracking-wide transition-colors ${
+              activeTab === tab
+                ? 'border-accent-ice text-accent-ice'
+                : 'border-transparent text-noir-muted hover:text-noir-text'
+            }`}
+          >
+            {label} ({count})
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'projects' && (
+      <section className="mt-10">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-2xl">Projects</h2>
           <Link href="/admin/projects/new" className="font-mono text-sm text-accent-ice transition-colors hover:text-noir-text">
@@ -216,8 +239,10 @@ export default function AdminDashboardPage() {
           ))}
         </ul>
       </section>
+      )}
 
-      <section className="mt-16">
+      {activeTab === 'notes' && (
+      <section className="mt-10">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-2xl">Notes</h2>
           <Link href="/admin/notes/new" className="font-mono text-sm text-accent-ice transition-colors hover:text-noir-text">
@@ -261,6 +286,7 @@ export default function AdminDashboardPage() {
           ))}
         </ul>
       </section>
+      )}
     </main>
   );
 }

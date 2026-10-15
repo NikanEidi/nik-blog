@@ -68,6 +68,23 @@ export default function NoteForm({
     setImageUrl((await res.json()).url);
   }
 
+  // Reads a local .md file straight into the content field — for notes
+  // already written elsewhere (langchain-practice/notes/, k8s-practice,
+  // etc.) instead of re-typing or copy-pasting them by hand. Parsed
+  // entirely client-side; nothing is uploaded until the form is submitted.
+  async function handleMarkdownFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const text = await file.text();
+    setContent(text);
+
+    if (!title) {
+      const heading = text.match(/^#\s+(.+)$/m);
+      setTitle(heading ? heading[1].trim() : file.name.replace(/\.md$/i, '').replace(/[-_]+/g, ' '));
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -150,9 +167,18 @@ export default function NoteForm({
         )}
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="content" className={labelClass}>
-          Content (Markdown)
-        </label>
+        <div className="flex items-baseline justify-between">
+          <label htmlFor="content" className={labelClass}>
+            Content (Markdown)
+          </label>
+          <label
+            htmlFor="mdFile"
+            className="cursor-pointer font-mono text-xs uppercase tracking-wide text-accent-ice transition-colors hover:text-noir-text"
+          >
+            Upload .md file
+          </label>
+          <input id="mdFile" type="file" accept=".md,text/markdown" onChange={handleMarkdownFileChange} className="hidden" />
+        </div>
         <textarea
           id="content"
           className={`${inputClass} border font-mono text-sm leading-relaxed`}
