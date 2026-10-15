@@ -1,15 +1,39 @@
 import Link from 'next/link';
-import { getNotes } from '@/lib/api';
+import { getNotes, type Note } from '@/lib/api';
 import GlitchText from '@/components/GlitchText';
+import { categoryColor } from '@/lib/categoryColors';
 
 export const instant = false;
 
+// Groups notes by category, preserving each category's first-appearance
+// order in the already-sorted (pinned, then recency) list from the API —
+// so sections land in a reasonable order without a second sort pass.
+function groupByCategory(notes: Note[]): [string, Note[]][] {
+  const groups = new Map<string, Note[]>();
+  for (const note of notes) {
+    const existing = groups.get(note.category);
+    if (existing) {
+      existing.push(note);
+    } else {
+      groups.set(note.category, [note]);
+    }
+  }
+  return [...groups.entries()];
+}
+
 export default async function NotesPage() {
   const notes = await getNotes();
+  const grouped = groupByCategory(notes);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-20 md:px-10">
-      <h1 className="font-display text-4xl md:text-5xl">
+      <Link
+        href="/"
+        className="rounded px-1 -mx-1 font-mono text-xs uppercase tracking-wide text-noir-muted underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice"
+      >
+        ← Home
+      </Link>
+      <h1 className="font-display mt-4 text-4xl md:text-5xl">
         <GlitchText as="span" intervalMs={5000}>Notes</GlitchText>
       </h1>
       <p className="mt-4 max-w-[60ch] text-noir-muted">
@@ -17,19 +41,28 @@ export default async function NotesPage() {
         way.
       </p>
 
-      <ul className="mt-16 divide-y divide-noir-border">
-        {notes.map((note) => (
-          <li key={note.id} className="flex flex-col gap-2 py-8 first:pt-0 md:flex-row md:items-baseline md:justify-between md:gap-8">
-            <Link
-              href={`/notes/${note.slug}`}
-              className="rounded px-1 -mx-1 font-display text-xl underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice md:w-2/3 md:shrink-0"
-            >
-              {note.title}
-            </Link>
-            <span className="font-mono text-sm uppercase tracking-wide text-noir-muted">{note.category}</span>
-          </li>
-        ))}
-      </ul>
+      {grouped.map(([category, categoryNotes]) => (
+        <section key={category} className="mt-16">
+          <h2
+            className="border-l-2 pl-3 font-mono text-xs uppercase tracking-wide"
+            style={{ borderColor: categoryColor(category), color: categoryColor(category) }}
+          >
+            {category}
+          </h2>
+          <ul className="mt-4 divide-y divide-noir-border">
+            {categoryNotes.map((note) => (
+              <li key={note.id} className="py-6 first:pt-0">
+                <Link
+                  href={`/notes/${note.slug}`}
+                  className="rounded px-1 -mx-1 font-display text-xl underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice"
+                >
+                  {note.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </main>
   );
 }

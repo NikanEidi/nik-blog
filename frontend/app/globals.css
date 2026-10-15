@@ -105,3 +105,36 @@ body::before {
     filter: blur(0);
   }
 }
+
+/* Code syntax highlighting (rehype-highlight, notes/[slug]) — hand-mapped
+   to the site's own accent tokens instead of importing a stock highlight.js
+   theme file, so a code block looks native to the design system instead of
+   an embedded third-party widget with its own unrelated colors. */
+.hljs-keyword,
+.hljs-operator,
+.hljs-punctuation {
+  color: var(--color-accent-copper);
+}
+.hljs-string,
+.hljs-attr,
+.hljs-tag {
+  color: var(--color-accent-ice);
+}
+.hljs-title,
+.hljs-title.function_,
+.hljs-built_in {
+  color: var(--color-accent-neon);
+}
+.hljs-number,
+.hljs-literal,
+.hljs-variable {
+  color: var(--color-accent-coral);
+}
+.hljs-type,
+.hljs-class .hljs-title {
+  color: var(--color-accent-violet);
+}
+.hljs-comment {
+  color: var(--color-noir-muted);
+  font-style: italic;
+}

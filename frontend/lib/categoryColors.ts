@@ -1,25 +1,10 @@
-// Maps a note's category to its accent color (DESIGN.md — "Note category
-// color map"). Centralized here so the mapping is defined once, not
-// re-typed in every component that renders a category-colored element.
-//
-// `category` itself is a free-text tag Nikan types in the admin form, not
-// an enforced enum (notes/13) — this map covers the categories used so
-// far; any category not listed here falls back to a neutral grey below,
-// so a brand-new tag still renders correctly without needing a code change.
-//
-// Stored as hex, not `var(--color-...)`, on purpose: DossierItem's border
-// proximity-tint needs the real numeric value to interpolate in JS (see
-// notes/10 — CSS-side color blending turned out unreliable with this
-// project's CSS engine), and a hex string works identically to a CSS
-// variable anywhere it's just assigned to a `color`/`style` property.
-export const CATEGORY_COLORS: Record<string, string> = {
-  'ai-ml': '#2dd9c4',
-  backend: '#8ec5de', // blue — swapped from the original copper/orange pick
-  infrastructure: '#b5703f', // copper now lives here instead
-  ios: '#9b8cd6',
-  dsa: '#d97a5c',
-};
+// A note's category tag, a project's tech-stack chip, and related-content
+// labels all render in one fixed accent color — copper — instead of the
+// earlier per-category rainbow (dropped per feedback, 2026-10-15: the
+// multi-color scheme read as too many accents competing at once, and a
+// single consistent tag color reads calmer against the noir base).
+export const TAG_ACCENT_COLOR = '#b5703f';
 
-export function categoryColor(category: string): string {
-  return CATEGORY_COLORS[category] ?? '#8a8a86';
+export function categoryColor(_category: string): string {
+  return TAG_ACCENT_COLOR;
 }

@@ -51,7 +51,7 @@ export default async function ProjectDetailPage({
           {project.tech_stack.map((tech) => (
             <span
               key={tech}
-              className="rounded-full border border-noir-border px-3 py-1 font-mono text-xs uppercase tracking-wide text-noir-muted"
+              className="rounded-full border border-accent-copper px-3 py-1 font-mono text-xs uppercase tracking-wide text-accent-copper"
             >
               {tech}
             </span>

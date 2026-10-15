@@ -1,6 +1,9 @@
+import { isValidElement } from 'react';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
 import { getNoteBySlug } from '@/lib/api';
+import MermaidDiagram from '@/components/MermaidDiagram';
 
 export const instant = false;
 
@@ -24,9 +27,22 @@ const markdownComponents = {
   code: (props: React.ComponentProps<'code'>) => (
     <code className="rounded bg-noir-surface px-1.5 py-0.5 font-mono text-[0.9em] text-accent-copper" {...props} />
   ),
-  pre: (props: React.ComponentProps<'pre'>) => (
-    <pre className="my-6 overflow-x-auto rounded bg-noir-surface p-4 font-mono text-sm [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-noir-text" {...props} />
-  ),
+  // A ```mermaid fenced block arrives here as <pre><code class="language-
+  // mermaid">...</code></pre> — intercepted at the <pre> level so a real
+  // diagram renders instead of a code block. Every other language falls
+  // through to the normal highlighted <pre>.
+  pre: (props: React.ComponentProps<'pre'>) => {
+    const child = props.children;
+    if (isValidElement<{ className?: string; children?: React.ReactNode }>(child)) {
+      const className = child.props.className ?? '';
+      if (className.includes('language-mermaid')) {
+        return <MermaidDiagram chart={String(child.props.children).trim()} />;
+      }
+    }
+    return (
+      <pre className="my-6 overflow-x-auto rounded bg-noir-surface p-4 font-mono text-sm [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-noir-text" {...props} />
+    );
+  },
   ul: (props: React.ComponentProps<'ul'>) => <ul className="my-4 list-disc space-y-1 pl-6" {...props} />,
   ol: (props: React.ComponentProps<'ol'>) => <ol className="my-4 list-decimal space-y-1 pl-6" {...props} />,
   blockquote: (props: React.ComponentProps<'blockquote'>) => (
@@ -52,7 +68,9 @@ export default async function NoteDetailPage({
       <h1 className="font-display mt-2 text-4xl md:text-5xl">{note.title}</h1>
 
       <article className="mt-12 max-w-[68ch]">
-        <ReactMarkdown components={markdownComponents}>{note.content}</ReactMarkdown>
+        <ReactMarkdown components={markdownComponents} rehypePlugins={[rehypeHighlight]}>
+          {note.content}
+        </ReactMarkdown>
       </article>
     </main>
   );

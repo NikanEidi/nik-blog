@@ -21,5 +21,8 @@ One note per real piece of work on this project: what we built, why it's built t
 | 12 | [Admin panel design + logout](12-admin-panel-design-and-logout.md) | Applying noir tokens to a utility screen without its ambient effects; missing logout, delete, and `nodemon` script found and fixed; a Projects/Notes tab switcher; uploading a local `.md` file straight into the Note form |
 | 13 | [Project detail page design](13-project-detail-page-design.md) | The last unstyled public page, reusing `LivePulse`, a Related Notes section, and a missing Project field in the Note form that made it reachable |
 | 14 | [Free-text category tags](14-free-text-category-tags.md) | Dropping a database CHECK constraint, a `<datalist>` for autocomplete without enforcement, why the existing color fallback needed zero changes |
+| 15 | [Notes grouped by category + breadcrumbs](15-notes-grouped-by-category-and-breadcrumbs.md) | Grouping with a `Map` to preserve insertion order, completing the back-link chain from detail page to list page to home |
+| 16 | [Tag colors simplified + footer](16-tag-colors-simplified-and-footer.md) | One fixed tag accent instead of five, dropping the proximity-to-white glass effect, a `new Date()` prerendering bug in the new footer |
+| 17 | [Mermaid + syntax highlighting](17-mermaid-and-syntax-highlighting.md) | A server-side rehype plugin for code highlighting vs. a Client Component for mermaid (only mermaid needs the DOM), intercepting at `<pre>` not `<code>` |
 
 More notes get added as each phase of `PLAN.md` is finished.

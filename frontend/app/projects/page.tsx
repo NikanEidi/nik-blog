@@ -14,7 +14,13 @@ export default async function ProjectsPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-20 md:px-10">
-      <h1 className="font-display text-4xl md:text-5xl">
+      <Link
+        href="/"
+        className="rounded px-1 -mx-1 font-mono text-xs uppercase tracking-wide text-noir-muted underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice"
+      >
+        ← Home
+      </Link>
+      <h1 className="font-display mt-4 text-4xl md:text-5xl">
         <GlitchText as="span" intervalMs={5000}>Projects</GlitchText>
       </h1>
       <p className="mt-4 max-w-[60ch] text-noir-muted">
