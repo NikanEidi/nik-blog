@@ -25,5 +25,6 @@ One note per real piece of work on this project: what we built, why it's built t
 | 16 | [Tag colors simplified + footer](16-tag-colors-simplified-and-footer.md) | One fixed tag accent instead of five, dropping the proximity-to-white glass effect, a `new Date()` prerendering bug in the new footer |
 | 17 | [Mermaid + syntax highlighting](17-mermaid-and-syntax-highlighting.md) | A server-side rehype plugin for code highlighting vs. a Client Component for mermaid (only mermaid needs the DOM), intercepting at `<pre>` not `<code>` |
 | 18 | [Video uploads for project covers](18-video-uploads.md) | MP4/WebM over GIF and why, no schema change needed, a real `<video>` vs `<img>` verification with a generated test clip |
+| 19 | [Backend deployed — Neon + Render](19-backend-deployed-neon-render.md) | Fixing hardcoded localhost CORS/cookie settings before going live, a flaky `search_path` bug caused by a connection pooler, why a direct connection beat the pooled one |
 
 More notes get added as each phase of `PLAN.md` is finished.

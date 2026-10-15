@@ -4,12 +4,15 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// The frontend (localhost:3000) and backend (localhost:3001) are different
-// origins, so the browser blocks cross-origin requests by default. `cors()`
-// allows the frontend's origin specifically (not '*' — a wildcard origin
-// can't be combined with credentials), and `credentials: true` is what lets
-// the browser actually send/receive the HTTP-only auth cookie cross-origin.
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+// The frontend and backend are different origins (localhost:3000/:3001
+// locally, a Vercel domain and a Render domain in production), so the
+// browser blocks cross-origin requests by default. `cors()` allows the
+// frontend's origin specifically (not '*' — a wildcard origin can't be
+// combined with credentials), and `credentials: true` is what lets the
+// browser actually send/receive the HTTP-only auth cookie cross-origin.
+// FRONTEND_URL must be set in production (Render) to the real deployed
+// frontend URL, or every request from it gets blocked by CORS.
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
 
 // Lets Express read JSON request bodies (needed for POST /auth/login).
 app.use(express.json());

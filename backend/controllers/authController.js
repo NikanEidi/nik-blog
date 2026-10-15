@@ -1,6 +1,21 @@
 const pool = require('../db/pool');
 const { comparePassword, generateToken } = require('../services/authService');
 
+// httpOnly: client-side JavaScript can never read this cookie (even via a
+// successful XSS injection), which is the whole reason it's safer than
+// storing the token in localStorage. In production the frontend (Vercel)
+// and backend (Render) live on different domains, so this is a genuine
+// cross-site request — that needs sameSite: 'none' + secure: true, or the
+// browser silently refuses to send the cookie back on later requests.
+// Locally both run on localhost with different ports, which the browser
+// treats as same-site, so 'lax' + non-secure (plain HTTP) still works there.
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: process.env.NODE_ENV === 'production',
+  maxAge: 2 * 60 * 60 * 1000, // matches the JWT's own 2h expiry
+};
+
 async function login(req, res) {
   const { email, password } = req.body;
 
@@ -28,23 +43,16 @@ async function login(req, res) {
 
   const token = generateToken(adminUser);
 
-  // httpOnly: client-side JavaScript can never read this cookie (even via
-  // a successful XSS injection), which is the whole reason it's safer than
-  // storing the token in localStorage. sameSite: 'lax' stops the browser
-  // from sending it on cross-site requests (CSRF protection) while still
-  // allowing normal navigation. maxAge matches the JWT's own 2h expiry.
-  res.cookie('token', token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: false, // dev only — must be true once this is served over HTTPS
-    maxAge: 2 * 60 * 60 * 1000,
-  });
+  res.cookie('token', token, COOKIE_OPTIONS);
 
   res.json({ status: 'ok' });
 }
 
 function logout(req, res) {
-  res.clearCookie('token');
+  // clearCookie must be called with the same attributes the cookie was set
+  // with (sameSite/secure/path) — a mismatch means the browser treats it as
+  // a different cookie and silently fails to clear the real one.
+  res.clearCookie('token', COOKIE_OPTIONS);
   res.json({ status: 'ok' });
 }
 
