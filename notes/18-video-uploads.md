@@ -2,7 +2,7 @@
 
 ## What this does
 
-Project covers could only be static images. Added support for a short video clip instead — MP4/WebM specifically, not GIF (Nikan's own call: GIF's compression is bad enough that the same clip is many times larger as a GIF than as MP4, for worse quality). Same upload field, same `image_url` column — a project's cover media is still one field, just told apart by file extension now.
+Project covers could only be static images. Added support for a short video clip instead — MP4/WebM specifically, not GIF (my own call: GIF's compression is bad enough that the same clip is many times larger as a GIF than as MP4, for worse quality). Same upload field, same `image_url` column — a project's cover media is still one field, just told apart by file extension now.
 
 ```
 backend/middleware/uploadImage.js   — video/mp4, video/webm added to the whitelist, limit raised to 10MB
@@ -17,7 +17,7 @@ A project's cover is still just `image_url` — one field. Whether it renders as
 
 ## The actual AWS cost question, answered honestly
 
-Nikan asked directly whether video would push S3 costs up. The real numbers: S3 storage is ~$0.023/GB/month, plus negligible per-request and data-transfer costs at this traffic level — a handful of few-MB clips costs a fraction of a cent per month to store. The real risk with video isn't storage cost, it's file size for a bad reason: GIF. The same 3-4 second clip that's 10-20MB as a GIF is often under 1MB as MP4 — so steering away from GIF isn't just an encoding preference, it directly avoids a real, avoidable cost and load-time increase.
+I asked directly whether video would push S3 costs up. The real numbers: S3 storage is ~$0.023/GB/month, plus negligible per-request and data-transfer costs at this traffic level — a handful of few-MB clips costs a fraction of a cent per month to store. The real risk with video isn't storage cost, it's file size for a bad reason: GIF. The same 3-4 second clip that's 10-20MB as a GIF is often under 1MB as MP4 — so steering away from GIF isn't just an encoding preference, it directly avoids a real, avoidable cost and load-time increase.
 
 ## Verified live
 

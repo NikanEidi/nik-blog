@@ -2,7 +2,7 @@
 
 ## What this does
 
-A note's `category` was a hard CHECK constraint limited to exactly five values (`ai-ml`, `backend`, `infrastructure`, `ios`, `dsa`), picked from a dropdown in the admin form. Nikan's call: category is content he writes, not a fixed system of record — he's the one who decides what tags exist and keeps the naming consistent, not the database. Changed it to a free-text field everywhere the constraint showed up.
+A note's `category` was a hard CHECK constraint limited to exactly five values (`ai-ml`, `backend`, `infrastructure`, `ios`, `dsa`), picked from a dropdown in the admin form. My call: category is content I write, not a fixed system of record — I'm the one who decides what tags exist and keeps the naming consistent, not the database. Changed it to a free-text field everywhere the constraint showed up.
 
 ```
 backend/db/schema.sql                    — dropped the CHECK constraint
@@ -48,4 +48,4 @@ This is pure suggestion — the browser shows matching options as you type, but 
 
 ## One-line interview answer
 
-> "A field that looked like a fixed enum (CHECK-constrained in the database, a dropdown in the UI) turned out to be better as free text once the actual owner of that data said he'd rather control the taxonomy himself — removing a constraint is still a schema migration, so it got the same idempotent `ALTER TABLE` treatment as adding one, and a `<datalist>` kept autocomplete convenience without reintroducing the restriction."
+> "A field that looked like a fixed enum (CHECK-constrained in the database, a dropdown in the UI) turned out to be better as free text once I realized I'd rather control the taxonomy myself — removing a constraint is still a schema migration, so it got the same idempotent `ALTER TABLE` treatment as adding one, and a `<datalist>` kept autocomplete convenience without reintroducing the restriction."

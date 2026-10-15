@@ -2,7 +2,7 @@
 
 ## What this does
 
-A single admin account (Nikan only, created once by a script — no public signup) can log in with email/password and receive a JWT. That JWT then has to be sent on every request to a protected route, proving the caller is really the logged-in admin.
+A single admin account (me only, created once by a script — no public signup) can log in with email/password and receive a JWT. That JWT then has to be sent on every request to a protected route, proving the caller is really the logged-in admin.
 
 ```
 POST /auth/login  { email, password }  →  { token }
@@ -11,7 +11,7 @@ GET  /admin/me     Authorization: Bearer <token>  →  { admin identity }
 
 ## Why no public signup route
 
-A signup endpoint lets anyone create an account. This blog has exactly one admin — Nikan — so a signup route would just be an unused attack surface: one more endpoint that has to be secured, rate-limited, and defended against abuse, for a feature nobody legitimately needs. Instead, `scripts/create-admin.js` is a one-time, run-by-hand script that inserts the single admin row directly. If the admin password ever needs to change, a similar script (or a direct query) does it — there's no "forgot password" flow either, for the same reason.
+A signup endpoint lets anyone create an account. This blog has exactly one admin — me — so a signup route would just be an unused attack surface: one more endpoint that has to be secured, rate-limited, and defended against abuse, for a feature nobody legitimately needs. Instead, `scripts/create-admin.js` is a one-time, run-by-hand script that inserts the single admin row directly. If the admin password ever needs to change, a similar script (or a direct query) does it — there's no "forgot password" flow either, for the same reason.
 
 ## Layered architecture, and why it was worth restructuring for
 

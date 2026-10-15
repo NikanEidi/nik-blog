@@ -92,6 +92,8 @@ npm run dev           # http://localhost:3000
 
 Every real piece of work gets a note under [`notes/`](notes/) — what was built, why it's built that way, and the syntax/logic explained, written from the actual build sessions rather than from theory. Start at [`notes/README.md`](notes/README.md).
 
+**On AI usage:** this project is built collaboratively with Anthropic's Claude — pairing on code, and drafting the learning notes from real build sessions, which I review and correct. Project cover images are AI-generated (Google Gemini) from prompts I write myself to match the site's own design system.
+
 ## License
 
 Not yet decided — will be added before this is made public.

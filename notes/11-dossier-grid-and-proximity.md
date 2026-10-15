@@ -29,7 +29,7 @@ github_pushed_at: repo.pushed_at,
 
 Stored through all three paths in `projectService.upsertFromGithub` (matched-by-URL update, adopted-by-slug update, and fresh insert) so it stays current on every re-sync, then rendered as a small animated dot plus `relativeTime(pushedAt)` ("5d ago", "3mo ago"). This is one of the four differentiators agreed back at the start of the project (`PLAN.md` §8, "Live Pulse") — finally built, and it only happened because the "soulless" decorative-number feedback forced a rethink of what a project card's corner should actually contain.
 
-## `pinned` — Nikan's own curation signal, not just recency
+## `pinned` — my own curation signal, not just recency
 
 ```sql
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT false;
@@ -97,7 +97,7 @@ No technical reason — just didn't look right once seen live against real conte
 
 ## Honesty check caught in the same pass
 
-The original hero copy said *"I update what I'm learning here daily."* That's not a commitment Nikan actually intends to keep, and CLAUDE.md's honesty rule applies to a personal site's own copy just as much as a résumé bullet — changed to *"I write about what I'm actually learning as I build,"* which is true regardless of posting cadence. Also dropped the specific city (Newmarket, Ontario) from the public bio in favor of just "Canada," Nikan's own call for this public-facing page.
+The original hero copy said *"I update what I'm learning here daily."* That's not a commitment I actually intend to keep, and CLAUDE.md's honesty rule applies to a personal site's own copy just as much as a résumé bullet — changed to *"I write about what I'm actually learning as I build,"* which is true regardless of posting cadence. Also dropped the specific city (Newmarket, Ontario) from the public bio in favor of just "Canada," my own call for this public-facing page.
 
 ## Verified live
 

@@ -30,7 +30,7 @@ Keeping the function's signature unchanged meant every call site (`DossierItem`'
 
 ## A footer, and the first GitHub link anywhere on the site
 
-The site had zero footer — no way to reach Nikan's GitHub, LinkedIn, or email from any page. Added `Footer.tsx`, mounted once in the root layout so every page gets it via `mt-auto` on a flex-column `<body>` (pins to the bottom on short pages, flows naturally after content on long ones).
+The site had zero footer — no way to reach my GitHub, LinkedIn, or email from any page. Added `Footer.tsx`, mounted once in the root layout so every page gets it via `mt-auto` on a flex-column `<body>` (pins to the bottom on short pages, flows naturally after content on long ones).
 
 **Real bug, and a two-step fix — the first attempt wasn't actually enough.** `new Date().getFullYear()` in the Footer tripped Next.js 16's Cache Components prerendering check — "Next.js encountered the unstable value `new Date()` while prerendering." First fix was marking `Footer` as a Client Component, same as `CursorGlow` already does for its own dynamic behavior — and that *did* clear the error in testing at the time. But a Client Component still gets server-rendered for its first paint, which still counts as "prerendering" to this check, and the error came back once a fresh prerender actually ran (caught from the real browser, not the dev session that happened to avoid triggering it). The actual fix: stop calling `new Date()` during render at all. Compute the year only after mount:
 

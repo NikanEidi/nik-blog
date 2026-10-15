@@ -2,7 +2,7 @@
 
 ## What this does
 
-Nikan's existing `.md` notes (`langchain-practice/notes/`, etc.) already use Mermaid diagrams, and GitHub renders them natively — this site didn't, and fenced code blocks had zero syntax highlighting (every token was the same flat color). Both fixed in `notes/[slug]/page.tsx`.
+My existing `.md` notes (`langchain-practice/notes/`, etc.) already use Mermaid diagrams, and GitHub renders them natively — this site didn't, and fenced code blocks had zero syntax highlighting (every token was the same flat color). Both fixed in `notes/[slug]/page.tsx`.
 
 ```
 frontend/components/MermaidDiagram.tsx   — new, renders a mermaid code block as an actual diagram

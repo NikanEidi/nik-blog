@@ -14,7 +14,7 @@ frontend/components/NoteForm.tsx     — file input, uploads immediately on choo
 
 ## The S3 setup itself (AWS console work, not code)
 
-- A dedicated bucket (`nikblog-images`, region `ca-central-1` — matches where Nikan actually is, lower latency than the US default).
+- A dedicated bucket (`nikblog-images`, region `ca-central-1` — matches where I actually am, lower latency than the US default).
 - **Block Public Access** left mostly on, except the two "policy" sub-settings — allows a scoped bucket policy to grant public read, while ACL-based public access (a separate, harder-to-audit mechanism) stays fully blocked. This is AWS's own recommended pattern for "public read, no public write."
 - A bucket policy granting `s3:GetObject` to everyone, on this bucket only — public read for images, nothing else.
 - A dedicated **IAM user** (`nikblog-backend`) with a **custom policy** scoped to exactly `s3:PutObject` and `s3:DeleteObject` on `nikblog-images/*` — not a broad managed policy like `AmazonS3FullAccess`. This is the least-privilege principle in practice: if this access key ever leaked, the damage is capped at "someone can add or delete files in one images bucket," not "someone has access to every AWS resource in the account."

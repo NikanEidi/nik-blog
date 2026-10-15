@@ -18,7 +18,7 @@ category TEXT NOT NULL CHECK (category IN ('ai-ml', 'backend', 'infrastructure',
 
 First draft had a `project-deep-dive` category, which turned out to be the wrong axis: that's describing the *kind* of note, not its *tech domain*. A note about LedgerLite's auth flow is a `backend` note that happens to be about a specific project — those are two independent facts, not one. That's what `project_id` (below) is for, kept deliberately separate from `category`.
 
-The five categories were chosen to match Nikan's real project mix (langchain-practice/CineVision → `ai-ml`; Fragments/LedgerLite/this project → `backend`; k8s-practice → `infrastructure`; HC → `ios`; Exercises/dsa → `dsa`) instead of a generic bucket like "general" — the kind of section names a real tech blog uses, not a catch-all.
+The five categories were chosen to match my real project mix (langchain-practice/CineVision → `ai-ml`; Fragments/LedgerLite/this project → `backend`; k8s-practice → `infrastructure`; HC → `ios`; Exercises/dsa → `dsa`) instead of a generic bucket like "general" — the kind of section names a real tech blog uses, not a catch-all.
 
 ## `project_id` — optional, independent of category
 
