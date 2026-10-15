@@ -1,9 +1,12 @@
 'use client';
 
-// Client Component specifically so `new Date()` doesn't trip Next.js 16's
-// Cache Components prerendering check (same reasoning as CursorGlow) — the
-// footer sits in the root layout, shared by every route, including ones
-// that don't opt into `instant = false`.
+import { useEffect, useState } from 'react';
+
+// Being a Client Component alone doesn't exempt `new Date()` — Next.js 16
+// still server-renders a Client Component for the first paint, and that
+// counts as "prerendering" too. The fix is computing the year only after
+// mount (useEffect), not during render, so no run of this component ever
+// calls `new Date()` on the prerendered path.
 const LINKS = [
   { label: 'GitHub', href: 'https://github.com/NikanEidi' },
   { label: 'LinkedIn', href: 'https://linkedin.com/in/nikan-eidi-03476232b' },
@@ -11,10 +14,16 @@ const LINKS = [
 ];
 
 export default function Footer() {
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <footer className="mt-auto border-t border-noir-border">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-10 md:flex-row md:items-center md:justify-between md:px-10">
-        <p className="font-mono text-xs text-noir-muted">© {new Date().getFullYear()} Nikan Eidi</p>
+        <p className="font-mono text-xs text-noir-muted">© {year ?? ''} Nikan Eidi</p>
         <nav className="flex gap-6">
           {LINKS.map((link) => (
             <a

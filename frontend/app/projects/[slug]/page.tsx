@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getProjectBySlug, getNotes } from '@/lib/api';
 import { LivePulse } from '@/components/DossierItem';
 import { categoryColor } from '@/lib/categoryColors';
+import { isVideoUrl } from '@/lib/isVideoUrl';
 
 export const instant = false;
 
@@ -37,7 +38,17 @@ export default async function ProjectDetailPage({
         <h1 className="font-display mt-2 text-4xl md:text-5xl">{project.title}</h1>
       </div>
 
-      {project.image_url && (
+      {project.image_url && isVideoUrl(project.image_url) && (
+        <video
+          src={project.image_url}
+          className="mt-8 w-full rounded border border-noir-border"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+      )}
+      {project.image_url && !isVideoUrl(project.image_url) && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={project.image_url} alt="" className="mt-8 w-full rounded border border-noir-border" />
       )}

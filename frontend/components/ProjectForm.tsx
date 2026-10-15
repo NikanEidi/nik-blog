@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { isVideoUrl } from '@/lib/isVideoUrl';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -151,19 +152,23 @@ export default function ProjectForm({
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="image" className={labelClass}>
-          Image
+          Image or video (max 10MB — short MP4/WebM clips instead of GIF, which compresses far worse)
         </label>
         <input
           id="image"
           type="file"
-          accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+          accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,video/mp4,video/webm"
           onChange={handleImageChange}
           className="font-mono text-sm text-noir-muted file:mr-3 file:border file:border-noir-border file:bg-transparent file:px-3 file:py-1.5 file:font-mono file:text-xs file:uppercase file:tracking-wide file:text-noir-text"
         />
         {uploading && <p className="font-mono text-sm text-noir-muted">Uploading…</p>}
         {imageUrl && !uploading && (
           <div className="mt-2 flex items-center gap-4">
-            <img src={imageUrl} alt="" className="max-w-[200px] rounded border border-noir-border" />
+            {isVideoUrl(imageUrl) ? (
+              <video src={imageUrl} className="max-w-[200px] rounded border border-noir-border" autoPlay loop muted playsInline />
+            ) : (
+              <img src={imageUrl} alt="" className="max-w-[200px] rounded border border-noir-border" />
+            )}
             <button type="button" onClick={() => setImageUrl(null)} className="font-mono text-xs uppercase tracking-wide text-noir-muted transition-colors hover:text-accent-coral">
               Remove image
             </button>

@@ -32,15 +32,26 @@ Keeping the function's signature unchanged meant every call site (`DossierItem`'
 
 The site had zero footer — no way to reach Nikan's GitHub, LinkedIn, or email from any page. Added `Footer.tsx`, mounted once in the root layout so every page gets it via `mt-auto` on a flex-column `<body>` (pins to the bottom on short pages, flows naturally after content on long ones).
 
-**Real bug caught immediately:** `new Date().getFullYear()` in a Server Component tripped Next.js 16's Cache Components prerendering check — "Next.js encountered the unstable value `new Date()` while prerendering" — the exact same category of issue `CursorGlow` already solves by being a Client Component. Fixed the same way: `'use client'` on `Footer`, confirmed the dev-overlay error badge disappeared on reload.
+**Real bug, and a two-step fix — the first attempt wasn't actually enough.** `new Date().getFullYear()` in the Footer tripped Next.js 16's Cache Components prerendering check — "Next.js encountered the unstable value `new Date()` while prerendering." First fix was marking `Footer` as a Client Component, same as `CursorGlow` already does for its own dynamic behavior — and that *did* clear the error in testing at the time. But a Client Component still gets server-rendered for its first paint, which still counts as "prerendering" to this check, and the error came back once a fresh prerender actually ran (caught from the real browser, not the dev session that happened to avoid triggering it). The actual fix: stop calling `new Date()` during render at all. Compute the year only after mount:
+
+```tsx
+const [year, setYear] = useState<number | null>(null);
+useEffect(() => {
+  setYear(new Date().getFullYear());
+}, []);
+// ...
+<p>© {year ?? ''} Nikan Eidi</p>
+```
+
+`'use client'` was necessary but not sufficient — the component also had to stop reading a dynamic value during its own render path, client or not.
 
 ## Verified live
 
 - Homepage and `/projects/[slug]`: card borders and tags render copper everywhere; hovering a dossier card no longer shows any background wash or border-color shift — only the title link itself turns ice on direct hover.
 - `/projects/code-review-agent`: the `PYTHON` tech chip renders copper-bordered/copper-text, matching the tag color everywhere else.
-- Footer renders on every page checked (`/`, a project detail page), links point to the real GitHub/LinkedIn/email.
-- Confirmed the Next.js dev-overlay "1 Issue" badge (the `new Date()` prerendering error) is gone after converting `Footer` to a Client Component.
+- Footer renders on every page checked (`/`, a project detail page), links point to the real GitHub/LinkedIn/email, and the year populates correctly after mount (`© 2026 Nikan Eidi`).
+- Confirmed the Next.js dev-overlay error badge is actually gone after the `useEffect` fix — the earlier `'use client'`-only fix had looked sufficient in testing but the error reappeared on a real fresh load, which is what prompted the second, correct fix.
 
 ## One-line interview answer
 
-> "A styling simplification request surfaced a real Next.js 16 Cache Components error — `new Date()` in a Server Component isn't prerenderable — caught immediately by the dev overlay and fixed the same way an earlier component (`CursorGlow`) had already solved the identical class of problem: moving the dynamic value into a Client Component."
+> "A styling request surfaced a real Next.js 16 Cache Components error, and the first fix for it looked right but wasn't — marking the component a Client Component cleared the error in that session, but a Client Component still gets server-rendered for its first paint, so the actual fix was moving the `new Date()` call out of render entirely and into a `useEffect`, which is the only place a dynamic value is safe to read regardless of client/server."
