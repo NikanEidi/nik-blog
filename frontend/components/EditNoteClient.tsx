@@ -12,6 +12,7 @@ type Note = {
   category: 'ai-ml' | 'backend' | 'infrastructure' | 'ios' | 'dsa';
   content: string;
   status: 'draft' | 'published';
+  image_url: string | null;
 };
 
 export default function EditNoteClient({ id }: { id: string }) {
@@ -39,7 +40,11 @@ export default function EditNoteClient({ id }: { id: string }) {
   return (
     <main>
       <h1>Edit Note</h1>
-      <NoteForm mode="edit" noteId={note.id} initialValues={note} />
+      <NoteForm
+        mode="edit"
+        noteId={note.id}
+        initialValues={{ ...note, imageUrl: note.image_url }}
+      />
     </main>
   );
 }
