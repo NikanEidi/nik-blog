@@ -5,9 +5,21 @@ import { categoryColor } from '@/lib/categoryColors';
 
 export const instant = false;
 
-// Groups notes by category, preserving each category's first-appearance
-// order in the already-sorted (pinned, then recency) list from the API —
-// so sections land in a reasonable order without a second sort pass.
+// A numbered series title ("07: Full RAG") should read in that order, not
+// the API's pinned/recency order — notes often get edited (bumping
+// created_at-adjacent sorting) well after the series was written, which
+// scrambles 01..08 into whatever order they were last touched. Pull the
+// leading number out of the title and sort by it; titles with no leading
+// number keep their original (pinned, then recency) relative order and sort
+// after any numbered ones, via a stable sort.
+function leadingNumber(title: string): number {
+  const match = /^(\d+)[:.]/.exec(title);
+  return match ? Number(match[1]) : Infinity;
+}
+
+// Groups notes by category (preserving first-appearance order from the
+// already-sorted API list for section ordering), then sorts each
+// category's notes into reading order.
 function groupByCategory(notes: Note[]): [string, Note[]][] {
   const groups = new Map<string, Note[]>();
   for (const note of notes) {
@@ -17,6 +29,9 @@ function groupByCategory(notes: Note[]): [string, Note[]][] {
     } else {
       groups.set(note.category, [note]);
     }
+  }
+  for (const categoryNotes of groups.values()) {
+    categoryNotes.sort((a, b) => leadingNumber(a.title) - leadingNumber(b.title));
   }
   return [...groups.entries()];
 }

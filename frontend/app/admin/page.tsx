@@ -86,6 +86,8 @@ export default function AdminDashboardPage() {
   const [noteSearch, setNoteSearch] = useState('');
   const [noteStatusFilter, setNoteStatusFilter] = useState<StatusFilter>('all');
   const [activeTab, setActiveTab] = useState<'projects' | 'notes'>('projects');
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   const loadDashboard = useCallback(async () => {
     const meRes = await fetch(`${API_URL}/admin/me`, { credentials: 'include' });
@@ -135,6 +137,26 @@ export default function AdminDashboardPage() {
     }
     await fetch(`${API_URL}/${kind}/${id}`, { method: 'DELETE', credentials: 'include' });
     loadDashboard();
+  }
+
+  async function syncGithub() {
+    setSyncing(true);
+    setSyncMessage(null);
+    try {
+      const res = await fetch(`${API_URL}/admin/sync-github`, { method: 'POST', credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) {
+        setSyncMessage('Sync failed');
+      } else {
+        setSyncMessage(`Synced: ${data.inserted} new, ${data.updated} updated`);
+        await loadDashboard();
+      }
+    } catch {
+      setSyncMessage('Sync failed');
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncMessage(null), 5000);
+    }
   }
 
   async function handleLogout() {
@@ -197,7 +219,33 @@ export default function AdminDashboardPage() {
       {activeTab === 'projects' && (
       <section className="mt-10">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-2xl">Projects</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="font-display text-2xl">Projects</h2>
+            <button
+              onClick={syncGithub}
+              disabled={syncing}
+              title="Sync from GitHub"
+              aria-label="Sync from GitHub"
+              className="rounded p-1 text-noir-muted transition-colors hover:text-accent-ice disabled:opacity-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`}
+              >
+                <path d="M21 12a9 9 0 0 1-15.3 6.4L3 15" />
+                <path d="M3 12a9 9 0 0 1 15.3-6.4L21 9" />
+                <path d="M3 21v-6h6" />
+                <path d="M21 3v6h-6" />
+              </svg>
+            </button>
+            {syncMessage && <span className="font-mono text-xs text-noir-muted">{syncMessage}</span>}
+          </div>
           <Link href="/admin/projects/new" className="font-mono text-sm text-accent-ice transition-colors hover:text-noir-text">
             + New Project
           </Link>

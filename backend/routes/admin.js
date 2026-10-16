@@ -27,5 +27,6 @@ router.patch('/notes/:id/status', requireAuth, controller.updateNoteStatus);
 router.patch('/projects/:id/pin', requireAuth, controller.setProjectPinned);
 router.patch('/notes/:id/pin', requireAuth, controller.setNotePinned);
 router.post('/upload', requireAuth, handleUpload, controller.uploadImage);
+router.post('/sync-github', requireAuth, controller.syncGithub);
 
 module.exports = router;

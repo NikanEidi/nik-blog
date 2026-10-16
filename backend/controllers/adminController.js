@@ -1,6 +1,7 @@
 const projectService = require('../services/projectService');
 const noteService = require('../services/noteService');
 const s3Service = require('../services/s3Service');
+const githubService = require('../services/githubService');
 
 const VALID_STATUSES = ['draft', 'published'];
 
@@ -91,6 +92,27 @@ async function setNotePinned(req, res) {
   res.json({ status: 'ok', note: result.rows[0] });
 }
 
+// Same work as scripts/sync-github.js, exposed as an admin-triggered
+// endpoint instead of a CLI-only script — so pulling in a newly-pushed
+// repo doesn't need a terminal, just the refresh icon in the dashboard.
+async function syncGithub(req, res) {
+  const repos = await githubService.fetchRepos();
+
+  let inserted = 0;
+  let updated = 0;
+
+  for (const repo of repos) {
+    const { wasInserted } = await projectService.upsertFromGithub(repo);
+    if (wasInserted) {
+      inserted++;
+    } else {
+      updated++;
+    }
+  }
+
+  res.json({ status: 'ok', total: repos.length, inserted, updated });
+}
+
 async function uploadImage(req, res) {
   if (!req.file) {
     return res.status(400).json({ status: 'error', message: 'No image file provided' });
@@ -110,5 +132,6 @@ module.exports = {
   updateNoteStatus,
   setProjectPinned,
   setNotePinned,
+  syncGithub,
   uploadImage,
 };
