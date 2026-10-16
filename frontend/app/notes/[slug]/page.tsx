@@ -1,6 +1,7 @@
 import { isValidElement } from 'react';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { getNoteBySlug } from '@/lib/api';
 import MermaidDiagram from '@/components/MermaidDiagram';
@@ -48,6 +49,21 @@ const markdownComponents = {
   blockquote: (props: React.ComponentProps<'blockquote'>) => (
     <blockquote className="my-4 border-l-2 border-noir-border pl-4 text-noir-muted" {...props} />
   ),
+  // GFM pipe tables (`remarkGfm`) arrive as plain <table>/<th>/<td> with no
+  // styling of their own — mapped to the noir tokens the same way code
+  // blocks and blockquotes are, instead of relying on browser defaults.
+  table: (props: React.ComponentProps<'table'>) => (
+    <div className="my-6 overflow-x-auto">
+      <table className="w-full border-collapse text-sm" {...props} />
+    </div>
+  ),
+  thead: (props: React.ComponentProps<'thead'>) => (
+    <thead className="border-b border-noir-border font-mono text-xs uppercase tracking-wide text-noir-muted" {...props} />
+  ),
+  th: (props: React.ComponentProps<'th'>) => <th className="px-3 py-2 text-left" {...props} />,
+  td: (props: React.ComponentProps<'td'>) => (
+    <td className="border-b border-noir-border px-3 py-2 align-top" {...props} />
+  ),
 };
 
 export default async function NoteDetailPage({
@@ -68,7 +84,7 @@ export default async function NoteDetailPage({
       <h1 className="font-display mt-2 text-4xl md:text-5xl">{note.title}</h1>
 
       <article className="mt-12 max-w-[68ch]">
-        <ReactMarkdown components={markdownComponents} rehypePlugins={[rehypeHighlight]}>
+        <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
           {note.content}
         </ReactMarkdown>
       </article>
