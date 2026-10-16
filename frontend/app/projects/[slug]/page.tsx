@@ -96,7 +96,7 @@ export default async function ProjectDetailPage({
       )}
 
       {relatedNotes.length > 0 && (
-        <div className="mt-16 border-t border-noir-border pt-8">
+        <div id="related-notes" className="mt-16 scroll-mt-20 border-t border-noir-border pt-8">
           <h2 className="font-mono text-xs uppercase tracking-wide text-noir-muted">Related Notes</h2>
           <ul className="mt-4 divide-y divide-noir-border">
             {relatedNotes.map((note) => (
