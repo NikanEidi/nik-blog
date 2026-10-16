@@ -2,6 +2,8 @@
 
 **A portfolio and blog built as a real multi-layer application** — a REST API with authentication, a public site, and a private admin panel, instead of a static page. The goal isn't just "a portfolio," it's a genuine full-stack engineering demonstration: a backend and frontend talking over REST, real auth protecting a real admin surface, and (once built) a working embeddings-based search — nothing decorative, nothing claimed here that isn't actually running.
 
+**Live:** [blog-tw4c.onrender.com](https://blog-tw4c.onrender.com/) · backend API: https://nik-blog.onrender.com
+
 
 
 ---
@@ -14,7 +16,7 @@ Three things this project is deliberately *not* doing, and why:
 
 - **Not re-rendering GitHub's own pages.** A project's README and source stay on GitHub, linked directly — this site writes its own original notes instead of duplicating what GitHub already shows well.
 - **Not using Kubernetes.** Already proven via a separate project ([LedgerLite](https://github.com/NikanEidi/ledgerlite)); for a low-traffic personal site it would be pure operational overhead with no new skill payoff.
-- **Not inventing a custom note-writing format.** Notes are stored as plain Markdown — exactly how every note in this project already gets written by hand — and rendered client-side, instead of building a bespoke rich-text engine nobody needs.
+- **Not inventing a custom note-writing format.** Notes are stored as plain Markdown — exactly how every note in this project already gets written by hand — and rendered on the server with `react-markdown` + `rehype-highlight` (plus `mermaid` for diagrams), instead of building a bespoke rich-text engine nobody needs.
 
 ## Architecture
 
@@ -48,7 +50,7 @@ frontend/  Next.js (App Router) + TypeScript — Server Components for public pa
            Client Components for the authenticated admin panel
 ```
 
-Deployed separately once live: frontend on Vercel, backend + Postgres on Render/Railway.
+Deployed live as two independent Render Web Services (frontend and backend each redeploy on push), with Postgres on Neon (serverless, free tier — chosen over Render's own free Postgres, which expires after 30 days).
 
 ## What's actually built and working right now
 
@@ -58,16 +60,15 @@ Nothing below is aspirational — everything here has been tested live, end to e
 
 **Projects** — public `GET /projects` / `GET /projects/:slug` (published only), admin-only create/update/delete. A `scripts/sync-github.js` job pulls every public, non-fork GitHub repo and upserts it: a never-before-seen repo comes in as a `draft` awaiting review; a repo that matches an existing row (by URL, or by slug if it was created by hand first) only gets its metadata refreshed — its `status` is never touched, so re-running the sync can never silently un-publish something already reviewed.
 
-**Notes** — same public/admin split as Projects. Categories are real tech domains matched to the actual project mix (`ai-ml`, `backend`, `infrastructure`, `ios`, `dsa`) rather than a generic "general" bucket. Content is stored as plain Markdown and rendered client-side with `react-markdown`.
+**Notes** — same public/admin split as Projects. Category is a free-text tag Nikan writes and curates himself (not a fixed enum) — he owns keeping the naming consistent, with autocomplete suggestions from categories already in use. Content is stored as plain Markdown, rendered server-side with `react-markdown` + `rehype-highlight` (real syntax-highlighted code blocks) and `mermaid` for diagrams.
 
-**Admin panel** — `/admin/login` (a real form, not a curl command) sets the auth cookie; `/admin` lists every project and note regardless of status, with a one-click publish/draft toggle backed by a lightweight `PATCH .../status` endpoint.
+**Admin panel** — `/admin/login` sets the auth cookie; `/admin` lists every project and note with search/filter and a tab switcher, a one-click publish/draft toggle, and full create/edit forms (`ProjectForm`, `NoteForm`) for writing new content, not just toggling status.
 
 ## What's deliberately not built yet
 
-- **Visual design.** Every page above is functional but intentionally unstyled — logic and data flow first, one real design pass later (not per-page, to avoid redoing styling repeatedly as pages get added).
-- **Admin forms to create/edit notes and projects** (the dashboard can currently only toggle status, not write new content yet).
 - **Tag/topic system and note grouping** — notes currently have one category each; richer tagging (including pulling in a linked project's GitHub topics) is a planned follow-up.
-- **Semantic search ("ask my notes")**, tests + CI, and deployment.
+- **Semantic search ("ask my notes")** — embeddings-based search over published notes.
+- **Tests + CI** (Jest/Supertest + Playwright pipeline).
 
 ## Local development
 

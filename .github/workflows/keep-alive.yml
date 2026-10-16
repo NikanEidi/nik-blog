@@ -2,7 +2,10 @@ name: Keep backend alive
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    # Offset from :00/:10/:20... on purpose — GitHub explicitly documents that
+    # schedules on round numbers are the most congested and can be delayed or
+    # dropped under load. Firing on :03/:13/:23... avoids that contention.
+    - cron: "3-59/10 * * * *"
   workflow_dispatch: {}
 
 jobs:
