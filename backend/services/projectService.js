@@ -77,23 +77,32 @@ function setProjectPinned(id, pinned) {
   );
 }
 
+// Adds whatever GitHub detected (usually one language) to a project's
+// existing tags instead of replacing them — a manually-added tag (e.g.
+// "Kubernetes" on a repo GitHub only ever sees as "Shell") must survive
+// every later sync, the same way status/source already do.
+function mergeTechStack(existing, fromGithub) {
+  return [...new Set([...(existing || []), ...(fromGithub || [])])];
+}
+
 async function upsertFromGithub({ title, description, tech_stack, github_url, live_url, github_pushed_at }) {
   // Match by github_url first — this is how an already-synced row (source
   // 'github' or a manual row that got linked below) is found on every later
   // run. Metadata gets refreshed but status/source are left alone, so a
   // published project never gets reset to draft just by re-syncing.
   const byUrl = await pool.query(
-    'SELECT id FROM projects WHERE github_url = $1',
+    'SELECT id, tech_stack FROM projects WHERE github_url = $1',
     [github_url]
   );
 
   if (byUrl.rows.length > 0) {
+    const mergedTechStack = mergeTechStack(byUrl.rows[0].tech_stack, tech_stack);
     const result = await pool.query(
       `UPDATE projects
        SET title = $1, description = $2, tech_stack = $3, live_url = $4, github_pushed_at = $5, updated_at = NOW()
        WHERE id = $6
        RETURNING *`,
-      [title, description, tech_stack, live_url, github_pushed_at, byUrl.rows[0].id]
+      [title, description, mergedTechStack, live_url, github_pushed_at, byUrl.rows[0].id]
     );
     return { row: result.rows[0], wasInserted: false };
   }
@@ -106,16 +115,17 @@ async function upsertFromGithub({ title, description, tech_stack, github_url, li
   // refresh its metadata, but keep its current status/source as-is so a
   // manually published project stays published.
   const slugOwner = await pool.query(
-    'SELECT id FROM projects WHERE slug = $1',
+    'SELECT id, tech_stack FROM projects WHERE slug = $1',
     [slug]
   );
   if (slugOwner.rows.length > 0) {
+    const mergedTechStack = mergeTechStack(slugOwner.rows[0].tech_stack, tech_stack);
     const result = await pool.query(
       `UPDATE projects
        SET description = $1, tech_stack = $2, github_url = $3, live_url = $4, github_pushed_at = $5, updated_at = NOW()
        WHERE id = $6
        RETURNING *`,
-      [description, tech_stack, github_url, live_url, github_pushed_at, slugOwner.rows[0].id]
+      [description, mergedTechStack, github_url, live_url, github_pushed_at, slugOwner.rows[0].id]
     );
     return { row: result.rows[0], wasInserted: false };
   }
