@@ -2,7 +2,7 @@
 
 **A portfolio and blog built as a real multi-layer application** — a REST API with authentication, a public site, and a private admin panel, instead of a static page. The goal isn't just "a portfolio," it's a genuine full-stack engineering demonstration: a backend and frontend talking over REST, real auth protecting a real admin surface, and (once built) a working embeddings-based search — nothing decorative, nothing claimed here that isn't actually running.
 
-> Personal project, actively being built. See [`PLAN.md`](../nikan-career-assistant/projects-in-progress/nik-blog/PLAN.md) in the career-assistant repo for the full phase-by-phase plan and a dated progress log of every decision made along the way.
+
 
 ---
 
