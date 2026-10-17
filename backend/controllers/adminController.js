@@ -96,21 +96,26 @@ async function setNotePinned(req, res) {
 // endpoint instead of a CLI-only script — so pulling in a newly-pushed
 // repo doesn't need a terminal, just the refresh icon in the dashboard.
 async function syncGithub(req, res) {
-  const repos = await githubService.fetchRepos();
+  try {
+    const repos = await githubService.fetchRepos();
 
-  let inserted = 0;
-  let updated = 0;
+    let inserted = 0;
+    let updated = 0;
 
-  for (const repo of repos) {
-    const { wasInserted } = await projectService.upsertFromGithub(repo);
-    if (wasInserted) {
-      inserted++;
-    } else {
-      updated++;
+    for (const repo of repos) {
+      const { wasInserted } = await projectService.upsertFromGithub(repo);
+      if (wasInserted) {
+        inserted++;
+      } else {
+        updated++;
+      }
     }
-  }
 
-  res.json({ status: 'ok', total: repos.length, inserted, updated });
+    res.json({ status: 'ok', total: repos.length, inserted, updated });
+  } catch (err) {
+    console.error('GitHub sync failed:', err.message);
+    res.status(502).json({ status: 'error', message: `GitHub sync failed: ${err.message}` });
+  }
 }
 
 async function uploadImage(req, res) {
