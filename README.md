@@ -64,6 +64,8 @@ Nothing below is aspirational — everything here has been tested live, end to e
 
 **Admin panel** — `/admin/login` sets the auth cookie; `/admin` lists every project and note with search/filter and a tab switcher, a one-click publish/draft toggle, and full create/edit forms (`ProjectForm`, `NoteForm`) for writing new content, not just toggling status.
 
+**Infrastructure as Code** — the S3 bucket and IAM setup behind image uploads (note 08) started as hand-clicked AWS console work. It's now managed as code under [`infra/terraform/`](infra/terraform/), brought in with `terraform import` rather than destroyed and recreated, verified with `terraform plan` showing zero drift from the real, live infrastructure. See [note 20](notes/20-infrastructure-as-code.md).
+
 ## What's deliberately not built yet
 
 - **Tag/topic system and note grouping** — notes currently have one category each; richer tagging (including pulling in a linked project's GitHub topics) is a planned follow-up.

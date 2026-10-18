@@ -26,5 +26,6 @@ One note per real piece of work on this project: what we built, why it's built t
 | 17 | [Mermaid + syntax highlighting](17-mermaid-and-syntax-highlighting.md) | A server-side rehype plugin for code highlighting vs. a Client Component for mermaid (only mermaid needs the DOM), intercepting at `<pre>` not `<code>` |
 | 18 | [Video uploads for project covers](18-video-uploads.md) | MP4/WebM over GIF and why, no schema change needed, a real `<video>` vs `<img>` verification with a generated test clip |
 | 19 | [Backend deployed — Neon + Render](19-backend-deployed-neon-render.md) | Fixing hardcoded localhost CORS/cookie settings before going live, a flaky `search_path` bug caused by a connection pooler, why a direct connection beat the pooled one |
+| 20 | [Infrastructure as Code](20-infrastructure-as-code.md) | Bringing the real, already-running S3 bucket + IAM user under Terraform with `terraform import`, not destroying and recreating; a dedicated read-only IAM user; a real `HeadBucket`/`s3:ListBucket` permissions wall; verifying zero drift with `terraform plan` before trusting any of it |
 
 More notes get added as each phase of `PLAN.md` is finished.
