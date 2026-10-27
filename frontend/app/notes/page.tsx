@@ -16,7 +16,7 @@ function leadingNumber(title: string): number {
   // Trim first — a stray leading space (easy to type by accident in the
   // admin form) would otherwise make the anchored regex miss a real
   // "05: ..." title entirely and silently drop it to the end.
-  const match = /^(\d+)[:.]/.exec(title.trim());
+  const match = /^(\d+)\s*[-.:—–]/.exec(title.trim());
   return match ? Number(match[1]) : Infinity;
 }
 

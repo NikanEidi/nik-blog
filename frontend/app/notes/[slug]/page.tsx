@@ -83,6 +83,11 @@ export default async function NoteDetailPage({
       <span className="font-mono text-sm uppercase tracking-wide text-noir-muted">{note.category}</span>
       <h1 className="font-display mt-2 text-4xl md:text-5xl">{note.title}</h1>
 
+      {note.image_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={note.image_url} alt="" className="mt-8 w-full rounded border border-noir-border" />
+      )}
+
       <article className="mt-12 max-w-[68ch]">
         <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
           {note.content}
