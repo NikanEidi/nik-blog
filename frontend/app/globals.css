@@ -106,12 +106,7 @@ body::before {
   }
 }
 
-/* The notes hover-preview panel's mount-in (NotesListWithPreview) — the
-   whole panel fades/slides in lightly, while its title specifically gets
-   one quick pass of the same chromatic-aberration glitch as GlitchText
-   (reusing glitch-shadow above) so it actually reads as "glitch" at a
-   glance, not just a fade. One-shot on mount, not looping — a panel that
-   re-glitches on every single hover would be too busy. */
+/* Notes hover-preview panel mount-in (NotesListWithPreview). */
 .glitch-in {
   animation: glitch-in 0.25s steps(3, end);
 }
@@ -135,10 +130,7 @@ body::before {
   animation: glitch-shadow 0.4s steps(4, end);
 }
 
-/* The "+" insert-image button on a note's content textarea (NoteForm) —
-   a quick glitch pass on hover using the same keyframes as everything
-   else, instead of a plain color transition, so it reads as part of the
-   same noir/glitch design language rather than a generic form button. */
+/* Image-insert buttons in NoteForm. */
 .image-insert-btn:hover {
   animation: glitch-shadow 0.5s steps(4, end);
 }

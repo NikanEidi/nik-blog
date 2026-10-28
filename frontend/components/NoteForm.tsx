@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { measureSubstring, type OverlayRect } from '@/lib/textareaOverlay';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -19,6 +20,25 @@ type NoteFormValues = {
 };
 
 type ProjectOption = { id: number; title: string };
+
+// A Markdown image tag whose path isn't a real uploaded URL — a local path
+// left over from a .md file written elsewhere, which can't resolve once
+// published. start/end are offsets into content, used to replace exactly
+// that occurrence.
+type DetectedImage = { fullMatch: string; alt: string; path: string; start: number; end: number };
+
+function detectLocalImages(content: string): DetectedImage[] {
+  const pattern = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
+  const found: DetectedImage[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(content)) !== null) {
+    const [fullMatch, alt, path] = match;
+    if (!/^https?:\/\//i.test(path)) {
+      found.push({ fullMatch, alt, path, start: match.index, end: match.index + fullMatch.length });
+    }
+  }
+  return found;
+}
 
 export default function NoteForm({
   mode,
@@ -41,20 +61,39 @@ export default function NoteForm({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // The "+" button that inserts an image into the content textarea itself
-  // (separate from the cover-image field above). textareaRef tracks cursor
-  // position for insertion; contentImageInputRef is the hidden file input
-  // it triggers; insertingImage is its own loading flag, independent of
-  // `uploading` (the cover-image field's), so uploading one doesn't show a
-  // spinner state on the other.
+  // Inserts an image into the content textarea at the cursor position,
+  // separate from the cover-image field above.
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const contentImageInputRef = useRef<HTMLInputElement>(null);
   const [insertingImage, setInsertingImage] = useState(false);
   const [insertError, setInsertError] = useState<string | null>(null);
-  // Scales the "+" button with the textarea's own resize handle (it's a
-  // native `resize: vertical` field) — tracked via ResizeObserver since
-  // a drag-resize doesn't fire any React event on its own.
+  // Scales the insert button with the textarea's resize handle. A native
+  // resize doesn't fire a React event, so this is tracked via ResizeObserver.
   const [iconScale, setIconScale] = useState(1);
+
+  const detectedImages = useMemo(() => detectLocalImages(content), [content]);
+  const detectedImagesRef = useRef<DetectedImage[]>(detectedImages);
+  useEffect(() => {
+    detectedImagesRef.current = detectedImages;
+  }, [detectedImages]);
+
+  // Pixel position of each detected image tag within the textarea, so a
+  // button can sit exactly on top of it instead of in a separate list.
+  const [overlayRects, setOverlayRects] = useState<Record<number, OverlayRect>>({});
+
+  const recomputeOverlays = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const next: Record<number, OverlayRect> = {};
+    for (const img of detectedImagesRef.current) {
+      next[img.start] = measureSubstring(el, img.start, img.end);
+    }
+    setOverlayRects(next);
+  }, []);
+
+  useEffect(() => {
+    recomputeOverlays();
+  }, [detectedImages, recomputeOverlays]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -63,14 +102,69 @@ export default function NoteForm({
     const baseHeight = el.getBoundingClientRect().height || 1;
     const observer = new ResizeObserver(([entry]) => {
       const scale = entry.contentRect.height / baseHeight;
-      // Clamp so the button stays usable at both extremes — a 4x taller
-      // textarea shouldn't make the icon absurdly large, and a collapsed
-      // one shouldn't shrink it past being clickable.
+      // Clamped so the button stays a usable size at both extremes.
       setIconScale(Math.min(1.6, Math.max(0.85, scale)));
+      recomputeOverlays();
     });
     observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+    el.addEventListener('scroll', recomputeOverlays);
+    return () => {
+      observer.disconnect();
+      el.removeEventListener('scroll', recomputeOverlays);
+    };
+  }, [recomputeOverlays]);
+
+  const fixImageInputRef = useRef<HTMLInputElement>(null);
+  const [fixTarget, setFixTarget] = useState<DetectedImage | null>(null);
+  const [fixingStart, setFixingStart] = useState<number | null>(null);
+
+  function startFix(img: DetectedImage) {
+    setFixTarget(img);
+    fixImageInputRef.current?.click();
+  }
+
+  // Replaces one specific detected path, not every occurrence. start/end
+  // are only trusted if the content at that range still matches what was
+  // detected; otherwise falls back to the first remaining occurrence.
+  async function handleFixImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    const target = fixTarget;
+    if (!file || !target) return;
+
+    setFixingStart(target.start);
+    setInsertError(null);
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const res = await fetch(`${API_URL}/admin/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    setFixingStart(null);
+    setFixTarget(null);
+    e.target.value = '';
+
+    if (!res.ok) {
+      const data = await res.json();
+      setInsertError(data.message || 'Image upload failed');
+      return;
+    }
+
+    const { url } = await res.json();
+    const replacement = `![${target.alt}](${url})`;
+
+    setContent((current) => {
+      if (current.slice(target.start, target.end) === target.fullMatch) {
+        return current.slice(0, target.start) + replacement + current.slice(target.end);
+      }
+      const idx = current.indexOf(target.fullMatch);
+      if (idx === -1) return current;
+      return current.slice(0, idx) + replacement + current.slice(idx + target.fullMatch.length);
+    });
+  }
 
   // Powers the "Related Notes" section on a project's detail page
   // (projects/13-project-detail-page-design.md) — without this field, a
@@ -126,19 +220,14 @@ export default function NoteForm({
     setImageUrl((await res.json()).url);
   }
 
-  // Uploads an image to the same /admin/upload endpoint as the cover image,
-  // but instead of setting a separate field, inserts a real Markdown image
-  // tag with the real S3 URL directly into the content at the cursor's
-  // position — the fix for notes whose uploaded .md file referenced a local
-  // image path that could never resolve once published.
+  // Uploads an image and inserts a Markdown image tag at the cursor position.
   async function handleInsertContentImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     const textarea = textareaRef.current;
     if (!file || !textarea) return;
 
-    // Capture the cursor position before the async upload — by the time it
-    // resolves, the textarea may have lost focus (selectionStart would then
-    // read as stale/0), so this is the only reliable moment to read it.
+    // Read the cursor position now — the textarea may lose focus by the
+    // time the upload resolves.
     const cursor = textarea.selectionStart ?? content.length;
 
     setInsertingImage(true);
@@ -167,9 +256,7 @@ export default function NoteForm({
     const next = `${content.slice(0, cursor)}${markdownImage}${content.slice(cursor)}`;
     setContent(next);
 
-    // Put the cursor right after the inserted tag, not wherever it happens
-    // to land by default — React re-renders async, so this has to wait a
-    // tick for the textarea's value to actually update first.
+    // Wait for the re-render before moving the cursor after the inserted tag.
     const cursorAfter = cursor + markdownImage.length;
     requestAnimationFrame(() => {
       textarea.focus();
@@ -310,7 +397,7 @@ export default function NoteForm({
           </label>
           <input id="mdFile" type="file" accept=".md,text/markdown" onChange={handleMarkdownFileChange} className="hidden" />
         </div>
-        <div className="relative">
+        <div className="relative overflow-hidden">
           <textarea
             id="content"
             ref={textareaRef}
@@ -344,8 +431,42 @@ export default function NoteForm({
             onChange={handleInsertContentImage}
             className="hidden"
           />
+          {/* A small round icon at the start of each detected local image
+              tag, not stretched to the tag's full text width. */}
+          {detectedImages.map((img) => {
+            const rect = overlayRects[img.start];
+            if (!rect) return null;
+            const size = Math.min(20, Math.max(16, rect.height - 4));
+            return (
+              <button
+                key={img.start}
+                type="button"
+                title={img.path}
+                aria-label={`Replace ${img.path} with an uploaded image`}
+                onClick={() => startFix(img)}
+                disabled={fixingStart === img.start}
+                style={{ left: rect.left, top: rect.top + (rect.height - size) / 2, width: size, height: size }}
+                className="image-insert-btn absolute flex items-center justify-center rounded-full border border-accent-ice bg-noir-bg text-accent-ice transition-colors hover:bg-accent-ice hover:text-noir-bg disabled:opacity-50"
+              >
+                {fixingStart === img.start ? (
+                  <span className="font-mono text-[9px]">…</span>
+                ) : (
+                  <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M8 2.5v11M2.5 8h11" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
         </div>
         {insertError && <p className="text-sm text-accent-coral">{insertError}</p>}
+        <input
+          ref={fixImageInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+          onChange={handleFixImage}
+          className="hidden"
+        />
       </div>
       {error && <p className="text-sm text-accent-coral">{error}</p>}
       <button
