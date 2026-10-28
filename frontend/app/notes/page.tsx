@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getNotes, type Note } from '@/lib/api';
 import GlitchText from '@/components/GlitchText';
-import { categoryColor } from '@/lib/categoryColors';
+import NotesListWithPreview from '@/components/NotesListWithPreview';
 
 export const instant = false;
 
@@ -59,28 +59,7 @@ export default async function NotesPage() {
         way.
       </p>
 
-      {grouped.map(([category, categoryNotes]) => (
-        <section key={category} className="mt-16">
-          <h2
-            className="border-l-2 pl-3 font-mono text-xs uppercase tracking-wide"
-            style={{ borderColor: categoryColor(category), color: categoryColor(category) }}
-          >
-            {category}
-          </h2>
-          <ul className="mt-4 divide-y divide-noir-border">
-            {categoryNotes.map((note) => (
-              <li key={note.id} className="py-6 first:pt-0">
-                <Link
-                  href={`/notes/${note.slug}`}
-                  className="rounded px-1 -mx-1 font-display text-xl underline decoration-transparent underline-offset-4 transition-colors hover:bg-white/5 hover:text-accent-ice hover:decoration-accent-ice"
-                >
-                  {note.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <NotesListWithPreview grouped={grouped} />
     </main>
   );
 }

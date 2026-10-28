@@ -106,6 +106,43 @@ body::before {
   }
 }
 
+/* The notes hover-preview panel's mount-in (NotesListWithPreview) — the
+   whole panel fades/slides in lightly, while its title specifically gets
+   one quick pass of the same chromatic-aberration glitch as GlitchText
+   (reusing glitch-shadow above) so it actually reads as "glitch" at a
+   glance, not just a fade. One-shot on mount, not looping — a panel that
+   re-glitches on every single hover would be too busy. */
+.glitch-in {
+  animation: glitch-in 0.25s steps(3, end);
+}
+
+@keyframes glitch-in {
+  0% {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+  40% {
+    opacity: 0.6;
+    transform: translateX(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.glitch-in-title {
+  animation: glitch-shadow 0.4s steps(4, end);
+}
+
+/* The "+" insert-image button on a note's content textarea (NoteForm) —
+   a quick glitch pass on hover using the same keyframes as everything
+   else, instead of a plain color transition, so it reads as part of the
+   same noir/glitch design language rather than a generic form button. */
+.image-insert-btn:hover {
+  animation: glitch-shadow 0.5s steps(4, end);
+}
+
 /* Code syntax highlighting (rehype-highlight, notes/[slug]) — hand-mapped
    to the site's own accent tokens instead of importing a stock highlight.js
    theme file, so a code block looks native to the design system instead of

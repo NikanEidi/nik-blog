@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { getNoteBySlug } from '@/lib/api';
 import MermaidDiagram from '@/components/MermaidDiagram';
+import MarkdownImage from '@/components/MarkdownImage';
 
 export const instant = false;
 
@@ -64,6 +65,9 @@ const markdownComponents = {
   td: (props: React.ComponentProps<'td'>) => (
     <td className="border-b border-noir-border px-3 py-2 align-top" {...props} />
   ),
+  // An inline image that 404s should just not render, not show the
+  // browser's default broken-image icon — see MarkdownImage.
+  img: (props: React.ComponentProps<'img'>) => <MarkdownImage src={props.src} alt={props.alt} />,
 };
 
 export default async function NoteDetailPage({
