@@ -377,7 +377,7 @@ export default function NoteForm({
         {uploading && <p className="font-mono text-sm text-noir-muted">Uploading…</p>}
         {imageUrl && !uploading && (
           <div className="mt-2 flex items-center gap-4">
-            <img src={imageUrl} alt="" className="max-w-[200px] rounded border border-noir-border" />
+            <img src={imageUrl} alt="" className="max-w-50 rounded border border-noir-border" />
             <button type="button" onClick={() => setImageUrl(null)} className="font-mono text-xs uppercase tracking-wide text-noir-muted transition-colors hover:text-accent-coral">
               Remove image
             </button>
