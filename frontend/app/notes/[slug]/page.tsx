@@ -67,7 +67,9 @@ const markdownComponents = {
   ),
   // An inline image that 404s should just not render, not show the
   // browser's default broken-image icon — see MarkdownImage.
-  img: (props: React.ComponentProps<'img'>) => <MarkdownImage src={props.src} alt={props.alt} />,
+  img: (props: React.ComponentProps<'img'>) => (
+    <MarkdownImage src={typeof props.src === 'string' ? props.src : undefined} alt={props.alt} />
+  ),
 };
 
 export default async function NoteDetailPage({
