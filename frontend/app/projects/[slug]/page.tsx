@@ -4,6 +4,7 @@ import { getProjectBySlug, getNotes } from '@/lib/api';
 import { LivePulse } from '@/components/DossierItem';
 import { categoryColor } from '@/lib/categoryColors';
 import { isVideoUrl } from '@/lib/isVideoUrl';
+import { sortByLeadingNumber } from '@/lib/noteSort';
 
 export const instant = false;
 
@@ -23,7 +24,7 @@ export default async function ProjectDetailPage({
   // of adding decoration to fill the page — a project with write-ups gets
   // them surfaced right here instead of only being findable from /notes.
   const allNotes = await getNotes();
-  const relatedNotes = allNotes.filter((note) => note.project_id === project.id);
+  const relatedNotes = sortByLeadingNumber(allNotes.filter((note) => note.project_id === project.id));
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-20 md:px-10">

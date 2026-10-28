@@ -60,12 +60,7 @@ export default function NoteForm({
   const [saving, setSaving] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const contentImageInputRef = useRef<HTMLInputElement>(null);
-  const [insertingImage, setInsertingImage] = useState(false);
   const [insertError, setInsertError] = useState<string | null>(null);
-  // Scale for the insert button, synced to the textarea's resize via
-  // ResizeObserver (resizing a textarea fires no React event).
-  const [iconScale, setIconScale] = useState(1);
 
   const detectedImages = useMemo(() => detectLocalImages(content), [content]);
   const detectedImagesRef = useRef<DetectedImage[]>(detectedImages);
@@ -94,13 +89,7 @@ export default function NoteForm({
     const el = textareaRef.current;
     if (!el) return;
 
-    const baseHeight = el.getBoundingClientRect().height || 1;
-    const observer = new ResizeObserver(([entry]) => {
-      const scale = entry.contentRect.height / baseHeight;
-      // Clamped so the button stays a usable size at both extremes.
-      setIconScale(Math.min(1.6, Math.max(0.85, scale)));
-      recomputeOverlays();
-    });
+    const observer = new ResizeObserver(recomputeOverlays);
     observer.observe(el);
     el.addEventListener('scroll', recomputeOverlays);
     return () => {
@@ -204,49 +193,6 @@ export default function NoteForm({
     }
 
     setImageUrl((await res.json()).url);
-  }
-
-  // Uploads an image and inserts a Markdown image tag at the cursor position.
-  async function handleInsertContentImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    const textarea = textareaRef.current;
-    if (!file || !textarea) return;
-
-    // Read now — the textarea may lose focus before the upload resolves.
-    const cursor = textarea.selectionStart ?? content.length;
-
-    setInsertingImage(true);
-    setInsertError(null);
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const res = await fetch(`${API_URL}/admin/upload`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
-
-    setInsertingImage(false);
-    e.target.value = '';
-
-    if (!res.ok) {
-      const data = await res.json();
-      setInsertError(data.message || 'Image upload failed');
-      return;
-    }
-
-    const { url } = await res.json();
-    const markdownImage = `![](${url})`;
-    const next = `${content.slice(0, cursor)}${markdownImage}${content.slice(cursor)}`;
-    setContent(next);
-
-    // Wait for the re-render before moving the cursor after the inserted tag.
-    const cursorAfter = cursor + markdownImage.length;
-    requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.setSelectionRange(cursorAfter, cursorAfter);
-    });
   }
 
   // Reads a local .md file into the content field. Parsed client-side;
@@ -387,30 +333,6 @@ export default function NoteForm({
             onChange={(e) => setContent(e.target.value)}
             rows={16}
             required
-          />
-          <button
-            type="button"
-            title="Insert image at cursor"
-            aria-label="Insert image at cursor"
-            onClick={() => contentImageInputRef.current?.click()}
-            disabled={insertingImage}
-            style={{ transform: `scale(${iconScale})`, transformOrigin: 'top right' }}
-            className="image-insert-btn absolute top-3 right-3 flex h-7 w-7 items-center justify-center border border-accent-ice bg-noir-bg/80 text-accent-ice backdrop-blur-sm transition-colors hover:bg-accent-ice hover:text-noir-bg disabled:opacity-50"
-          >
-            {insertingImage ? (
-              <span className="font-mono text-[10px]">…</span>
-            ) : (
-              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M8 2.5v11M2.5 8h11" />
-              </svg>
-            )}
-          </button>
-          <input
-            ref={contentImageInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
-            onChange={handleInsertContentImage}
-            className="hidden"
           />
           {/* Small round icon at the start of each detected image tag. */}
           {detectedImages.map((img) => {
