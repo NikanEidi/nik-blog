@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -40,6 +40,37 @@ export default function NoteForm({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // The "+" button that inserts an image into the content textarea itself
+  // (separate from the cover-image field above). textareaRef tracks cursor
+  // position for insertion; contentImageInputRef is the hidden file input
+  // it triggers; insertingImage is its own loading flag, independent of
+  // `uploading` (the cover-image field's), so uploading one doesn't show a
+  // spinner state on the other.
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contentImageInputRef = useRef<HTMLInputElement>(null);
+  const [insertingImage, setInsertingImage] = useState(false);
+  const [insertError, setInsertError] = useState<string | null>(null);
+  // Scales the "+" button with the textarea's own resize handle (it's a
+  // native `resize: vertical` field) — tracked via ResizeObserver since
+  // a drag-resize doesn't fire any React event on its own.
+  const [iconScale, setIconScale] = useState(1);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    const baseHeight = el.getBoundingClientRect().height || 1;
+    const observer = new ResizeObserver(([entry]) => {
+      const scale = entry.contentRect.height / baseHeight;
+      // Clamp so the button stays usable at both extremes — a 4x taller
+      // textarea shouldn't make the icon absurdly large, and a collapsed
+      // one shouldn't shrink it past being clickable.
+      setIconScale(Math.min(1.6, Math.max(0.85, scale)));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Powers the "Related Notes" section on a project's detail page
   // (projects/13-project-detail-page-design.md) — without this field, a
@@ -93,6 +124,57 @@ export default function NoteForm({
     }
 
     setImageUrl((await res.json()).url);
+  }
+
+  // Uploads an image to the same /admin/upload endpoint as the cover image,
+  // but instead of setting a separate field, inserts a real Markdown image
+  // tag with the real S3 URL directly into the content at the cursor's
+  // position — the fix for notes whose uploaded .md file referenced a local
+  // image path that could never resolve once published.
+  async function handleInsertContentImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    const textarea = textareaRef.current;
+    if (!file || !textarea) return;
+
+    // Capture the cursor position before the async upload — by the time it
+    // resolves, the textarea may have lost focus (selectionStart would then
+    // read as stale/0), so this is the only reliable moment to read it.
+    const cursor = textarea.selectionStart ?? content.length;
+
+    setInsertingImage(true);
+    setInsertError(null);
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const res = await fetch(`${API_URL}/admin/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    setInsertingImage(false);
+    e.target.value = '';
+
+    if (!res.ok) {
+      const data = await res.json();
+      setInsertError(data.message || 'Image upload failed');
+      return;
+    }
+
+    const { url } = await res.json();
+    const markdownImage = `![](${url})`;
+    const next = `${content.slice(0, cursor)}${markdownImage}${content.slice(cursor)}`;
+    setContent(next);
+
+    // Put the cursor right after the inserted tag, not wherever it happens
+    // to land by default — React re-renders async, so this has to wait a
+    // tick for the textarea's value to actually update first.
+    const cursorAfter = cursor + markdownImage.length;
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(cursorAfter, cursorAfter);
+    });
   }
 
   // Reads a local .md file straight into the content field — for notes
@@ -228,14 +310,42 @@ export default function NoteForm({
           </label>
           <input id="mdFile" type="file" accept=".md,text/markdown" onChange={handleMarkdownFileChange} className="hidden" />
         </div>
-        <textarea
-          id="content"
-          className={`${inputClass} border font-mono text-sm leading-relaxed`}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={16}
-          required
-        />
+        <div className="relative">
+          <textarea
+            id="content"
+            ref={textareaRef}
+            className={`${inputClass} resize-y border font-mono text-sm leading-relaxed`}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={16}
+            required
+          />
+          <button
+            type="button"
+            title="Insert image at cursor"
+            aria-label="Insert image at cursor"
+            onClick={() => contentImageInputRef.current?.click()}
+            disabled={insertingImage}
+            style={{ transform: `scale(${iconScale})`, transformOrigin: 'top right' }}
+            className="image-insert-btn absolute top-3 right-3 flex h-7 w-7 items-center justify-center border border-accent-ice bg-noir-bg/80 text-accent-ice backdrop-blur-sm transition-colors hover:bg-accent-ice hover:text-noir-bg disabled:opacity-50"
+          >
+            {insertingImage ? (
+              <span className="font-mono text-[10px]">…</span>
+            ) : (
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M8 2.5v11M2.5 8h11" />
+              </svg>
+            )}
+          </button>
+          <input
+            ref={contentImageInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+            onChange={handleInsertContentImage}
+            className="hidden"
+          />
+        </div>
+        {insertError && <p className="text-sm text-accent-coral">{insertError}</p>}
       </div>
       {error && <p className="text-sm text-accent-coral">{error}</p>}
       <button
