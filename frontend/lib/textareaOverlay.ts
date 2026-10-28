@@ -37,10 +37,8 @@ function getMirror(): HTMLDivElement {
   return el;
 }
 
-// Finds where a substring of a textarea's value renders on screen, by
-// mirroring the textarea's text layout in a hidden div (same font, padding,
-// border, width) and reading a marker span's position inside it. Used to
-// place an overlay icon exactly on top of a matched piece of text.
+// Mirrors the textarea's text in a hidden div with matching font/padding,
+// then reads a marker span's position to find where a substring renders.
 export function measureSubstring(textarea: HTMLTextAreaElement, start: number, end: number): OverlayRect {
   const el = getMirror();
   const computed = getComputedStyle(textarea);
@@ -56,10 +54,8 @@ export function measureSubstring(textarea: HTMLTextAreaElement, start: number, e
   marker.textContent = textarea.value.slice(start, end) || ' ';
   el.appendChild(marker);
 
-  // getClientRects() (not offsetWidth/offsetHeight) because the matched
-  // text can wrap across lines — offsetWidth/Height would then report the
-  // full wrapped box instead of one line's worth. The first rect is where
-  // the match starts, which is what the overlay needs to be positioned on.
+  // getClientRects(), not offsetWidth/Height: those report the full wrapped
+  // box when the match spans lines, instead of just the first line.
   const mirrorBox = el.getBoundingClientRect();
   const rects = marker.getClientRects();
   const first = rects[0] ?? marker.getBoundingClientRect();

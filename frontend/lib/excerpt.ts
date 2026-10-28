@@ -1,9 +1,5 @@
-// Pulls a short, plain-text preview out of a note's raw Markdown — for the
-// hover-preview panel on /notes, which needs a couple of lines, not the
-// whole note. Skips a leading "# Title" line (notes/02 etc. often repeat
-// the page title as their first line) and strips inline Markdown syntax
-// (`code`, **bold**, *italic*, [links](url)) so the excerpt reads as plain
-// text, not raw symbols.
+// Plain-text preview from a note's Markdown: skips a leading "# Title"
+// line and strips inline syntax (code, bold, italic, links).
 export function excerptFromMarkdown(content: string, maxLength = 160): string {
   const lines = content
     .split('\n')

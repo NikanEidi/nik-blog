@@ -21,10 +21,8 @@ type NoteFormValues = {
 
 type ProjectOption = { id: number; title: string };
 
-// A Markdown image tag whose path isn't a real uploaded URL — a local path
-// left over from a .md file written elsewhere, which can't resolve once
-// published. start/end are offsets into content, used to replace exactly
-// that occurrence.
+// A Markdown image tag whose path isn't a real uploaded URL. start/end are
+// offsets into content, used to replace this exact occurrence.
 type DetectedImage = { fullMatch: string; alt: string; path: string; start: number; end: number };
 
 function detectLocalImages(content: string): DetectedImage[] {
@@ -61,14 +59,12 @@ export default function NoteForm({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Inserts an image into the content textarea at the cursor position,
-  // separate from the cover-image field above.
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const contentImageInputRef = useRef<HTMLInputElement>(null);
   const [insertingImage, setInsertingImage] = useState(false);
   const [insertError, setInsertError] = useState<string | null>(null);
-  // Scales the insert button with the textarea's resize handle. A native
-  // resize doesn't fire a React event, so this is tracked via ResizeObserver.
+  // Scale for the insert button, synced to the textarea's resize via
+  // ResizeObserver (resizing a textarea fires no React event).
   const [iconScale, setIconScale] = useState(1);
 
   const detectedImages = useMemo(() => detectLocalImages(content), [content]);
@@ -77,8 +73,7 @@ export default function NoteForm({
     detectedImagesRef.current = detectedImages;
   }, [detectedImages]);
 
-  // Pixel position of each detected image tag within the textarea, so a
-  // button can sit exactly on top of it instead of in a separate list.
+  // Pixel position of each detected image tag within the textarea.
   const [overlayRects, setOverlayRects] = useState<Record<number, OverlayRect>>({});
 
   const recomputeOverlays = useCallback(() => {
@@ -123,9 +118,8 @@ export default function NoteForm({
     fixImageInputRef.current?.click();
   }
 
-  // Replaces one specific detected path, not every occurrence. start/end
-  // are only trusted if the content at that range still matches what was
-  // detected; otherwise falls back to the first remaining occurrence.
+  // Replaces one specific match, verified by position before falling back
+  // to a plain text search if content shifted since it was detected.
   async function handleFixImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     const target = fixTarget;
@@ -166,20 +160,14 @@ export default function NoteForm({
     });
   }
 
-  // Powers the "Related Notes" section on a project's detail page
-  // (projects/13-project-detail-page-design.md) — without this field, a
-  // note's `project_id` (already supported by the backend) was never
-  // actually reachable from the UI.
+  // Options for the Project select below.
   useEffect(() => {
     fetch(`${API_URL}/admin/projects`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => setProjects(data.projects ?? []));
   }, []);
 
-  // Category is a free-text tag Nikan types himself, not a fixed list — he
-  // owns keeping the naming consistent. This just offers what's already
-  // been used as browser-native autocomplete suggestions, it never
-  // restricts the field to them.
+  // Autocomplete suggestions for the free-text Category field.
   useEffect(() => {
     fetch(`${API_URL}/admin/notes`, { credentials: 'include' })
       .then((res) => res.json())
@@ -199,10 +187,8 @@ export default function NoteForm({
     const formData = new FormData();
     formData.append('image', file);
 
-    // No Content-Type header here on purpose — the browser sets
-    // multipart/form-data with the correct boundary itself. Setting it
-    // manually would omit the boundary and the backend couldn't parse the
-    // upload at all.
+    // No Content-Type header — the browser sets multipart/form-data with
+    // the correct boundary automatically.
     const res = await fetch(`${API_URL}/admin/upload`, {
       method: 'POST',
       credentials: 'include',
@@ -226,8 +212,7 @@ export default function NoteForm({
     const textarea = textareaRef.current;
     if (!file || !textarea) return;
 
-    // Read the cursor position now — the textarea may lose focus by the
-    // time the upload resolves.
+    // Read now — the textarea may lose focus before the upload resolves.
     const cursor = textarea.selectionStart ?? content.length;
 
     setInsertingImage(true);
@@ -264,10 +249,8 @@ export default function NoteForm({
     });
   }
 
-  // Reads a local .md file straight into the content field — for notes
-  // already written elsewhere (langchain-practice/notes/, k8s-practice,
-  // etc.) instead of re-typing or copy-pasting them by hand. Parsed
-  // entirely client-side; nothing is uploaded until the form is submitted.
+  // Reads a local .md file into the content field. Parsed client-side;
+  // nothing is uploaded until the form is submitted.
   async function handleMarkdownFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -289,10 +272,8 @@ export default function NoteForm({
     const url = mode === 'create' ? `${API_URL}/notes` : `${API_URL}/notes/${noteId}`;
     const method = mode === 'create' ? 'POST' : 'PUT';
 
-    // PUT /notes/:id writes `status` straight into the SQL UPDATE, so an
-    // edit has to resend the note's current status — otherwise it would
-    // be sent as undefined and the database update would fail. Create
-    // doesn't need this: a new note always starts as 'draft' by default.
+    // Edits must resend the current status, or it's sent as undefined and
+    // the UPDATE fails. A new note doesn't need it — it defaults to draft.
     const body: Record<string, unknown> = { title, category, content, imageUrl, projectId };
     if (mode === 'edit') {
       body.status = initialValues?.status ?? 'draft';
@@ -431,8 +412,7 @@ export default function NoteForm({
             onChange={handleInsertContentImage}
             className="hidden"
           />
-          {/* A small round icon at the start of each detected local image
-              tag, not stretched to the tag's full text width. */}
+          {/* Small round icon at the start of each detected image tag. */}
           {detectedImages.map((img) => {
             const rect = overlayRects[img.start];
             if (!rect) return null;

@@ -2,10 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 
-// Renders a ```mermaid code block as an actual diagram. Mermaid needs the
-// DOM to render (it builds an SVG via its own layout engine), so this has
-// to be a Client Component — the rest of a note's markdown stays server-
-// rendered, only this one block hydrates.
+
 export default function MermaidDiagram({ chart }: { chart: string }) {
   const id = useId().replace(/:/g, '-');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,9 +12,7 @@ export default function MermaidDiagram({ chart }: { chart: string }) {
     let cancelled = false;
 
     import('mermaid').then(({ default: mermaid }) => {
-      // Theme variables matched to DESIGN.md's noir tokens instead of
-      // mermaid's default blue theme, so a diagram looks native to the
-      // site instead of like an embedded third-party widget.
+     
       mermaid.initialize({
         startOnLoad: false,
         theme: 'base',

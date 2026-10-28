@@ -1,7 +1,11 @@
 const GITHUB_USERNAME = 'NikanEidi';
 
 async function fetchRepos() {
-  const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100`);
+  // Unauthenticated GitHub API requests are capped at 60/hour per IP, easy
+  // to exhaust on Render's shared IPs. A token raises that to 5000/hour.
+  const headers = process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {};
+
+  const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100`, { headers });
 
   if (!response.ok) {
     throw new Error(`GitHub API request failed: ${response.status}`);

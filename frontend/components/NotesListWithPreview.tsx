@@ -6,13 +6,9 @@ import type { Note } from '@/lib/api';
 import { categoryColor } from '@/lib/categoryColors';
 import { excerptFromMarkdown } from '@/lib/excerpt';
 
-// Desktop-only (lg+): a small fixed side panel on the right that shows a
-// preview of whichever note the cursor is over — built as one shared panel
-// that swaps content on hover, not a position-tracked tooltip per item, so
-// there's no per-item layout math and it stays light. The `key={hovered.slug}`
-// on the inner content forces React to remount it on every hover change,
-// which is what retriggers the glitch-in animation below (a CSS mount
-// animation can't re-fire on a prop change alone, only on a real remount).
+// Desktop-only (lg+) fixed panel showing a preview of the hovered note.
+// `key={hovered.slug}` forces a remount on each hover change, which is
+// what retriggers the glitch-in CSS animation.
 export default function NotesListWithPreview({ grouped }: { grouped: [string, Note[]][] }) {
   const [hovered, setHovered] = useState<Note | null>(null);
 
