@@ -1,6 +1,9 @@
 services:
   postgres:
-    image: postgres:17
+    # pgvector's own image, built on top of postgres:17 — same Postgres,
+    # just with the `vector` extension already compiled in. Needed for the
+    # Nik-Blog Assistant's document_chunks table.
+    image: pgvector/pgvector:pg17
     container_name: nikblog-postgres
     environment:
       POSTGRES_USER: nikblog

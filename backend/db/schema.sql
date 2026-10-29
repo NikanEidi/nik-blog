@@ -38,6 +38,26 @@ CREATE TABLE IF NOT EXISTS notes (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Enables the `vector` column type + similarity operators (cosine distance,
+-- etc.) used below for the Nik-Blog Assistant's retrieval (RAG) pipeline.
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- One row per indexed chunk of text (a slice of a project description or a
+-- note's content) plus its embedding, used for similarity search at query
+-- time. Exactly one of project_id / note_id is set per row (never both,
+-- never neither) — enforced below, not just assumed.
+CREATE TABLE IF NOT EXISTS document_chunks (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id),
+    note_id INTEGER REFERENCES notes(id),
+    chunk_text TEXT NOT NULL,
+    embedding vector(384) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT document_chunks_exactly_one_source CHECK (
+        (project_id IS NOT NULL)::INTEGER + (note_id IS NOT NULL)::INTEGER = 1
+    )
+);
+
 -- Same existing-table situation as `status` above: these ALTERs are what
 -- actually add the column to a database that already has these tables.
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS image_url TEXT;

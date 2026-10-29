@@ -1,3 +1,7 @@
+// Must run before anything below reads process.env (the cors() setup two
+// lines down included) — db/pool.js also calls this, but that happens too
+// late here, only once a route file requires it further down this file.
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -25,6 +29,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/admin', require('./routes/admin'));
 app.use('/projects', require('./routes/projects'));
 app.use('/notes', require('./routes/notes'));
+app.use('/chat', require('./routes/chat'));
 
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
