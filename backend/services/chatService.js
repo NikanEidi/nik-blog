@@ -21,12 +21,15 @@ async function embedText(text) {
 
 // Cosine distance (`<=>`) ranges 0 (identical) to 2 (opposite), since
 // embeddings were normalized at indexing time (see scripts/index-content.js).
-// 0.6 is a starting point, not a tuned constant — loosen/tighten it after
-// testing against real questions. The WHERE filter matters as much as the
-// LIMIT: without it, a question with no good match still gets 5 irrelevant
-// chunks forced into the context, just because LIMIT always returns that
-// many rows if they exist.
-const MAX_DISTANCE = 0.6;
+// Tuned from a real measured case, not guessed: "How fragments work?" (a
+// genuinely vague question) scored 0.660 against the correct fragments
+// chunk, with the next-closest (actually unrelated) chunk at 0.814 — a
+// clear gap. 0.75 sits in that gap: loose enough to keep the real match,
+// still well under the unrelated cluster. The WHERE filter matters as much
+// as the LIMIT: without it, a question with no good match still gets 5
+// irrelevant chunks forced into the context, just because LIMIT always
+// returns that many rows if they exist.
+const MAX_DISTANCE = 0.75;
 
 async function findRelevantChunks(embedding, limit = 5, maxDistance = MAX_DISTANCE) {
   const result = await pool.query(
