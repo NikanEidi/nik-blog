@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -38,6 +38,23 @@ export default function ChatWidget() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<Exchange[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Click-outside-to-close — only listens while open, and ignores clicks
+  // on the launcher button itself (it already has its own toggle).
+  useEffect(() => {
+    if (!open) return;
+
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (panelRef.current?.contains(target) || buttonRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
 
   async function handleAsk(e: React.FormEvent) {
     e.preventDefault();
@@ -73,6 +90,7 @@ export default function ChatWidget() {
       {open && (
         <aside
           key="chat-panel"
+          ref={panelRef}
           className="glitch-in fixed bottom-40 right-4 z-50 flex h-[28rem] w-[calc(100vw-2rem)] max-w-sm flex-col border border-noir-border bg-noir-surface/95 backdrop-blur-sm sm:bottom-44 sm:right-6 sm:w-96"
         >
           <header className="flex items-center justify-between border-b border-noir-border px-4 py-3">
@@ -147,6 +165,7 @@ export default function ChatWidget() {
 
       <button
         type="button"
+        ref={buttonRef}
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Close chat' : 'Ask about Nikan\'s work'}
         className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-noir-border bg-noir-surface/90 text-noir-text backdrop-blur-sm transition-colors hover:text-accent-ice sm:bottom-24 sm:right-6"

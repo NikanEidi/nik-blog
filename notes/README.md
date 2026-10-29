@@ -27,5 +27,6 @@ One note per real piece of work on this project: what we built, why it's built t
 | 18 | [Video uploads for project covers](18-video-uploads.md) | MP4/WebM over GIF and why, no schema change needed, a real `<video>` vs `<img>` verification with a generated test clip |
 | 19 | [Backend deployed — Neon + Render](19-backend-deployed-neon-render.md) | Fixing hardcoded localhost CORS/cookie settings before going live, a flaky `search_path` bug caused by a connection pooler, why a direct connection beat the pooled one |
 | 20 | [Infrastructure as Code](20-infrastructure-as-code.md) | Bringing the real, already-running S3 bucket + IAM user under Terraform with `terraform import`, not destroying and recreating; a dedicated read-only IAM user; a real `HeadBucket`/`s3:ListBucket` permissions wall; verifying zero drift with `terraform plan` before trusting any of it |
+| 21 | [Nik-Blog Assistant — RAG chatbot](21-nik-blog-assistant-rag-chatbot.md) | pgvector + local embeddings, a cosine-distance threshold (not just `LIMIT`) to stop irrelevant chunks being forced into context, switching providers after a Gemini free-tier wall (20 req/day), a pre-existing dotenv/CORS ordering bug, and auto-reindexing a project/note's chunks on every publish/edit/unpublish/delete |
 
 More notes get added as each phase of `PLAN.md` is finished.

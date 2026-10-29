@@ -1,4 +1,5 @@
 const noteService = require('../services/noteService');
+const indexService = require('../services/indexService');
 
 async function list(req, res) {
   const result = await noteService.listPublishedNotes();
@@ -24,7 +25,14 @@ async function create(req, res) {
   }
 
   const result = await noteService.createNote({ title, category: category.trim(), content, projectId, imageUrl });
-  res.status(201).json({ status: 'ok', note: result.rows[0] });
+  const note = result.rows[0];
+
+  // Notes default to 'draft' (schema.sql), so this is almost always a
+  // no-op in practice — kept anyway in case a future form lets a note be
+  // created already published.
+  await indexService.syncNoteIndex(note);
+
+  res.status(201).json({ status: 'ok', note });
 }
 
 async function update(req, res) {
@@ -39,14 +47,20 @@ async function update(req, res) {
     imageUrl,
   });
 
-  if (!result.rows[0]) {
+  const note = result.rows[0];
+  if (!note) {
     return res.status(404).json({ status: 'error', message: 'Note not found' });
   }
 
-  res.json({ status: 'ok', note: result.rows[0] });
+  // Covers every case: edited content, newly published, or unpublished —
+  // syncNoteIndex re-chunks if published, clears the chunks otherwise.
+  await indexService.syncNoteIndex(note);
+
+  res.json({ status: 'ok', note });
 }
 
 async function remove(req, res) {
+  await indexService.removeChunks('note', req.params.id);
   await noteService.deleteNote(req.params.id);
   res.status(204).send();
 }

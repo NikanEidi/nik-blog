@@ -1,5 +1,6 @@
 const projectService = require('../services/projectService');
 const noteService = require('../services/noteService');
+const indexService = require('../services/indexService');
 const s3Service = require('../services/s3Service');
 const githubService = require('../services/githubService');
 
@@ -47,10 +48,16 @@ async function updateProjectStatus(req, res) {
   }
 
   const result = await projectService.updateProjectStatus(req.params.id, status);
-  if (!result.rows[0]) {
+  const project = result.rows[0];
+  if (!project) {
     return res.status(404).json({ status: 'error', message: 'Project not found' });
   }
-  res.json({ status: 'ok', project: result.rows[0] });
+
+  // This toggle is the main way a project's searchability actually
+  // changes — publishing indexes it, unpublishing clears its chunks.
+  await indexService.syncProjectIndex(project);
+
+  res.json({ status: 'ok', project });
 }
 
 async function updateNoteStatus(req, res) {
@@ -60,10 +67,16 @@ async function updateNoteStatus(req, res) {
   }
 
   const result = await noteService.updateNoteStatus(req.params.id, status);
-  if (!result.rows[0]) {
+  const note = result.rows[0];
+  if (!note) {
     return res.status(404).json({ status: 'error', message: 'Note not found' });
   }
-  res.json({ status: 'ok', note: result.rows[0] });
+
+  // This toggle is how a note actually goes from invisible-to-the-chatbot
+  // to searchable (notes default to 'draft' on create).
+  await indexService.syncNoteIndex(note);
+
+  res.json({ status: 'ok', note });
 }
 
 async function setProjectPinned(req, res) {
