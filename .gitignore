@@ -8,6 +8,7 @@ frontend/node_modules/
 .env.local
 .env.*.local
 backend/.env
+backend/.env.neon
 frontend/.env*
 
 # next.js build output
@@ -31,3 +32,6 @@ coverage/
 
 # internal design notes — not meant to be public on GitHub
 DESIGN.md
+
+# local state for backend/scripts/review-cli.js (which note files were skipped) -- per-machine, not shared
+backend/scripts/.review-cli-state.json

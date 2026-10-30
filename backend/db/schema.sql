@@ -78,3 +78,10 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_pushed_at TIMESTAMPTZ;
 -- brand-new database never gets it in the first place, since the
 -- CREATE TABLE above no longer declares it).
 ALTER TABLE notes DROP CONSTRAINT IF EXISTS notes_category_check;
+
+-- 'skipped' lets the admin-review-cli (backend/scripts/review-cli.js)
+-- remember that Nikan said "no" to a GitHub-synced draft, so it's never
+-- re-prompted on a later run -- without this, every draft stays 'draft'
+-- forever and the CLI would ask about it again on every sync.
+ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_status_check;
+ALTER TABLE projects ADD CONSTRAINT projects_status_check CHECK (status IN ('draft', 'published', 'skipped'));

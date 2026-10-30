@@ -4,7 +4,11 @@ const indexService = require('../services/indexService');
 const s3Service = require('../services/s3Service');
 const githubService = require('../services/githubService');
 
-const VALID_STATUSES = ['draft', 'published'];
+// Notes never got a 'skipped' status (only projects did, for the
+// GitHub-review CLI) -- kept separate so the note endpoint can't be sent
+// a status the notes table's own CHECK constraint would reject.
+const VALID_PROJECT_STATUSES = ['draft', 'published', 'skipped'];
+const VALID_NOTE_STATUSES = ['draft', 'published'];
 
 async function me(req, res) {
   res.json({ status: 'ok', admin: req.admin });
@@ -43,8 +47,8 @@ async function getProjectById(req, res) {
 // dashboard button doesn't need to resend the whole project/note.
 async function updateProjectStatus(req, res) {
   const { status } = req.body;
-  if (!VALID_STATUSES.includes(status)) {
-    return res.status(400).json({ status: 'error', message: `status must be one of: ${VALID_STATUSES.join(', ')}` });
+  if (!VALID_PROJECT_STATUSES.includes(status)) {
+    return res.status(400).json({ status: 'error', message: `status must be one of: ${VALID_PROJECT_STATUSES.join(', ')}` });
   }
 
   const result = await projectService.updateProjectStatus(req.params.id, status);
@@ -62,8 +66,8 @@ async function updateProjectStatus(req, res) {
 
 async function updateNoteStatus(req, res) {
   const { status } = req.body;
-  if (!VALID_STATUSES.includes(status)) {
-    return res.status(400).json({ status: 'error', message: `status must be one of: ${VALID_STATUSES.join(', ')}` });
+  if (!VALID_NOTE_STATUSES.includes(status)) {
+    return res.status(400).json({ status: 'error', message: `status must be one of: ${VALID_NOTE_STATUSES.join(', ')}` });
   }
 
   const result = await noteService.updateNoteStatus(req.params.id, status);
